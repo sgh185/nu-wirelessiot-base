@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include "nrf.h"
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
@@ -7,23 +8,18 @@
 // Pin definitions
 #include "nrf52840dk.h"
 
+
 /*
  * Helper macros
  */ 
-#define AI __attribute__((always_inline))
+#define AI __attribute__((always_inline)) inline
 #define DELAY_TIME 500
-
-
-/*
- * State
- */ 
-bool display_currently_on = false;
 
  
 /*
  * Lights drivers
  */ 
-AI void __toggle_and_delay(uint32_t pin_number)
+static AI void __toggle_and_delay(uint32_t pin_number)
 {
     nrf_gpio_pin_toggle(pin_number);
     nrf_delay_ms(DELAY_TIME);
@@ -33,7 +29,7 @@ AI void __toggle_and_delay(uint32_t pin_number)
 }
 
 
-AI void turn_on_lights_display(void)
+static AI void do_lights_display(void)
 {
     /*
      * TOP 
@@ -48,11 +44,11 @@ AI void turn_on_lights_display(void)
      * 7) OFF, LED 3
      * 8) OFF, LED 4
      *
-     * NOTE --- Assume some caller up in the call stack 
-     * initializes AND the lights are off prior 
+     * NOTE --- Assume some caller up in the call stack initializes 
      */ 
     
     /* Steps 1-4 */
+    printf("\tsteps 1-4\n");
     __toggle_and_delay(LED1);
     __toggle_and_delay(LED2);
     __toggle_and_delay(LED3);
@@ -60,37 +56,11 @@ AI void turn_on_lights_display(void)
 
     
     /* Steps 5-8 */
+    printf("\tsteps 5-8\n");
     __toggle_and_delay(LED1);
     __toggle_and_delay(LED2);
     __toggle_and_delay(LED3);
     __toggle_and_delay(LED4);
-
-    
-    /*
-     * Mark global state
-     */ 
-    display_currently_on = true;
-   
-
-    return;
-}
-
-
-AI void turn_off_lights_display(void)
-{
-    /*
-     * Turns all lights off
-     */ 
-    nrf_gpio_pin_clear(LED1);
-    nrf_gpio_pin_clear(LED2);
-    nrf_gpio_pin_clear(LED3);
-    nrf_gpio_pin_clear(LED4);
-
-
-    /*
-     * Mark global state
-     */ 
-    display_currently_on = false;
 
 
     return;
@@ -100,22 +70,16 @@ AI void turn_off_lights_display(void)
 /*
  * Button handlers
  */ 
-AI void handle_button_1(void)
+static AI void handle_button(uint32_t invocation_no)
 {
     /*
-     * Turn on lights if not on already 
+     * Output debugging and turn on the display
      */ 
-    if (!display_currently_on) turn_on_lights_display();
-    return;
-}
+    printf("Invocation %lu!\n", invocation_no);
+    do_lights_display();
+    printf("Done!\n");
 
 
-AI void handle_button_2(void)
-{
-    /*
-     * Turn off lights if they're already on 
-     */ 
-    if (display_currently_on) turn_off_lights_display();
     return;
 }
 
@@ -129,30 +93,35 @@ int main(void)
     nrf_gpio_cfg_output(LED2);
     nrf_gpio_cfg_output(LED3);
     nrf_gpio_cfg_output(LED4);
+    nrf_gpio_pin_set(LED1);
+    nrf_gpio_pin_set(LED2);
+    nrf_gpio_pin_set(LED3);
+    nrf_gpio_pin_set(LED4);
 
-
+    
     /*
-     * Button --- Initialization, only using buttons 1 and 2
+     * Button --- Initialization, only using button 1
      */  
     nrf_gpio_cfg_input(BUTTON1, NRF_GPIO_PIN_PULLUP);
-    nrf_gpio_cfg_input(BUTTON2, NRF_GPIO_PIN_PULLUP);
+    
+    
+    printf("Done initialization!\n");
 
 
     /*
      * Execute indefinitely, poll 
      */  
+    uint32_t invocation = 0;
     while (1)
     {
         /*
          * Handle button 1 --- "ON trigger"
          */ 
-        if (nrf_gpio_pin_read(BUTTON1)) handle_button_1();
-
-
-        /*
-         * Handle button 2 --- "OFF trigger"
-         */ 
-        if (nrf_gpio_pin_read(BUTTON2)) handle_button_2();
+        if (!nrf_gpio_pin_read(BUTTON1)) 
+	{
+	    handle_button(invocation);
+	    invocation++;
+	}
     }
 
 
