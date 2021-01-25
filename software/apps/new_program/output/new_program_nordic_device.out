@@ -1,0 +1,42 @@
+Last login: Mon Jan 25 00:53:46 on ttys018
+JLinkRTTClient -RTTTelnetPort 21761
+(base) sgh185s-MacBook-Pro:~ sgh185$ JLinkRTTClient -RTTTelnetPort 21761
+###RTT Client: ************************************************************ 
+###RTT Client: *               SEGGER Microcontroller GmbH                * 
+###RTT Client: *   Solutions for real time microcontroller applications   * 
+###RTT Client: ************************************************************ 
+###RTT Client: *                                                          * 
+###RTT Client: *       (c) 2012 - 2016  SEGGER Microcontroller GmbH       * 
+###RTT Client: *                                                          * 
+###RTT Client: *     www.segger.com     Support: support@segger.com       * 
+###RTT Client: *                                                          * 
+###RTT Client: ************************************************************ 
+###RTT Client: *                                                          * 
+###RTT Client: * SEGGER J-Link RTT Client   Compiled Jan 14 2021 11:48:33 * 
+###RTT Client: *                                                          * 
+###RTT Client: ************************************************************ 
+
+###RTT Client: -----------------------------------------------
+###RTT Client: Connecting to J-Link RTT Server via localhost:21761 ...
+###RTT Client: Connected.
+
+SEGGER J-Link V6.94a - Real time terminal output
+J-Link OB-SAM3U128-V2-NordicSemi compiled Mar 17 2020 14:43:00 V1.0, SN=683384514
+Process: JLinkExe
+Done initialization!
+Invocation 0!
+	steps 1-4
+	steps 5-8
+Done!
+Invocation 1!
+	steps 1-4
+	steps 5-8
+Done!
+Invocation 2!
+	steps 1-4
+	steps 5-8
+Done!
+Invocation 3!
+	steps 1-4
+	steps 5-8
+Done!
