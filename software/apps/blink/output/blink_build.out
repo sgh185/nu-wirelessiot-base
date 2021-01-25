@@ -1,0 +1,71 @@
+(base) sgh185s-MacBook-Pro:blink sgh185$ make flash
+BUILD OPTIONS:
+  Version     ffd9
+  Chip        nrf52840
+  RAM         256 kB
+  FLASH       1024 kB
+  SDK         15
+  SoftDevice  blank 0
+  Board       PCA10056
+ 
+SEGGER J-Link Commander V6.94a (Compiled Jan 14 2021 11:47:48)
+DLL version V6.94a, compiled Jan 14 2021 11:47:42
+
+
+J-Link Command File read successfully.
+Processing script file...
+
+J-Link connection not established yet but required for command.
+Connecting to J-Link via USB...O.K.
+Firmware: J-Link OB-SAM3U128-V2-NordicSemi compiled Mar 17 2020 14:43:00
+Hardware version: V1.00
+S/N: 683384514
+License(s): RDI, FlashBP, FlashDL, JFlash, GDB
+VTref=3.300V
+Target connection not established yet but required for command.
+Device "NRF52840_XXAA" selected.
+
+
+Connecting to target via SWD
+InitTarget() start
+InitTarget() end
+Found SW-DP with ID 0x2BA01477
+DPIDR: 0x2BA01477
+Scanning AP map to find all available APs
+AP[2]: Stopped AP scan as end of AP map has been reached
+AP[0]: AHB-AP (IDR: 0x24770011)
+AP[1]: JTAG-AP (IDR: 0x02880000)
+Iterating through AP map to find AHB-AP to use
+AP[0]: Core found
+AP[0]: AHB-AP ROM base: 0xE00FF000
+CPUID register: 0x410FC241. Implementer code: 0x41 (ARM)
+Found Cortex-M4 r0p1, Little endian.
+FPUnit: 6 code (BP) slots and 2 literal slots
+CoreSight components:
+ROMTbl[0] @ E00FF000
+ROMTbl[0][0]: E000E000, CID: B105E00D, PID: 000BB00C SCS-M7
+ROMTbl[0][1]: E0001000, CID: B105E00D, PID: 003BB002 DWT
+ROMTbl[0][2]: E0002000, CID: B105E00D, PID: 002BB003 FPB
+ROMTbl[0][3]: E0000000, CID: B105E00D, PID: 003BB001 ITM
+ROMTbl[0][4]: E0040000, CID: B105900D, PID: 000BB9A1 TPIU
+ROMTbl[0][5]: E0041000, CID: B105900D, PID: 000BB925 ETM
+Cortex-M4 identified.
+Reset delay: 0 ms
+Reset type NORMAL: Resets core & peripherals via SYSRESETREQ & VECTRESET bit.
+Reset: Halt core after reset via DEMCR.VC_CORERESET.
+Reset: Reset device via AIRCR.SYSRESETREQ.
+
+Downloading file [_build/blink_sdk15_blank.hex]...
+J-Link: Flash download: Bank 0 @ 0x00000000: 1 range affected (40960 bytes)
+J-Link: Flash download: Total: 3.878s (Prepare: 0.898s, Compare: 0.086s, Erase: 0.902s, Program & Verify: 1.954s, Restore: 0.036s)
+J-Link: Flash download: Program & Verify speed: 20 KB/s
+O.K.
+
+Reset delay: 0 ms
+Reset type NORMAL: Resets core & peripherals via SYSRESETREQ & VECTRESET bit.
+Reset: Halt core after reset via DEMCR.VC_CORERESET.
+Reset: Reset device via AIRCR.SYSRESETREQ.
+
+
+
+Script processing completed.
