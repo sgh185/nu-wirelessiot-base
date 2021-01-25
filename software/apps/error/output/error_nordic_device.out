@@ -1,0 +1,30 @@
+Last login: Sun Jan 24 20:53:12 on ttys009
+JLinkRTTClient -RTTTelnetPort 11433
+(base) sgh185s-MacBook-Pro:~ sgh185$ JLinkRTTClient -RTTTelnetPort 11433
+###RTT Client: ************************************************************ 
+###RTT Client: *               SEGGER Microcontroller GmbH                * 
+###RTT Client: *   Solutions for real time microcontroller applications   * 
+###RTT Client: ************************************************************ 
+###RTT Client: *                                                          * 
+###RTT Client: *       (c) 2012 - 2016  SEGGER Microcontroller GmbH       * 
+###RTT Client: *                                                          * 
+###RTT Client: *     www.segger.com     Support: support@segger.com       * 
+###RTT Client: *                                                          * 
+###RTT Client: ************************************************************ 
+###RTT Client: *                                                          * 
+###RTT Client: * SEGGER J-Link RTT Client   Compiled Jan 14 2021 11:48:33 * 
+###RTT Client: *                                                          * 
+###RTT Client: ************************************************************ 
+
+###RTT Client: -----------------------------------------------
+###RTT Client: Connecting to J-Link RTT Server via localhost:11433 ...
+###RTT Client: Connected.
+
+SEGGER J-Link V6.94a - Real time terminal output
+J-Link OB-SAM3U128-V2-NordicSemi compiled Mar 17 2020 14:43:00 V1.0, SN=683384514
+Process: JLinkExe
+Log initialized! Erroring in a second.
+<error> hardfault: HARD FAULT at 0x000002F4
+<error> hardfault:   R0:  0xFFFFFFFE  R1:  0x2003FA65  R2:  0x00000000  R3:  0x20040000
+<error> hardfault:   R12: 0x200009F4  LR:  0x000002EF  PSR: 0x61000000
+<error> hardfault: Cause: The processor has attempted to execute an undefined instruction.
