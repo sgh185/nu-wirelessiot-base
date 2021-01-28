@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <strings.h>
 
 #include "simple_ble.h"
 
@@ -24,7 +25,7 @@ static simple_ble_config_t ble_config = {
 simple_ble_app_t* simple_ble_app;
 
 
-
+#define FILTER 1
 #define MAX_ADDR_BYTES 6
 #define STRUCTURE_TYPE_SIZE 1
 #define MANUFACTURER_INFO_TYPE 0xFF
@@ -39,12 +40,20 @@ void ble_evt_adv_report(ble_evt_t const* p_ble_evt)
     uint8_t* adv_buf = adv_report->data.p_data; // array of up to 31 bytes of advertisement payload data
     uint16_t adv_len = adv_report->data.len; // length of advertisement payload data
 
-    printf("Received an advertisement! Parsing ...\n");
+
+#if FILTER
+    /*
+     * Filter for my Nordic device
+     */  
+    const uint8_t addr_to_find[MAX_ADDR_BYTES] = {0xBB, 0xAA, 0x4E, 0xE5, 0x98, 0xC0};
+    if (bcmp(ble_addr, addr_to_find, MAX_ADDR_BYTES)) return;
+#endif
 
 
     /*
      * Output the advertisement payload length
      */ 
+    printf("Received an advertisement! Parsing ...\n");
     printf(
 	"\tadv_len: \t%u\n",
 	adv_len
@@ -55,10 +64,10 @@ void ble_evt_adv_report(ble_evt_t const* p_ble_evt)
      * Print out the advertisement address (6 bytes)
      */ 
     int i;
-
     printf("\tble_addr: \t");
     for (i = 0 ; i < MAX_ADDR_BYTES ; i++) printf("%x ", ble_addr[i]);
     printf("\n");
+
 
 
     /*
