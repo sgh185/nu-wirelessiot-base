@@ -27,6 +27,8 @@ simple_ble_app_t* simple_ble_app;
 
 #define MAX_ADDR_BYTES 6
 #define STRUCTURE_TYPE_SIZE 1
+#define MANUFACTURER_INFO_TYPE 0xFF
+#define APPLE 0x4C
 
 // Callback handler for advertisement reception
 void ble_evt_adv_report(ble_evt_t const* p_ble_evt) 
@@ -103,6 +105,14 @@ void ble_evt_adv_report(ble_evt_t const* p_ble_evt)
 	for (data_idx = 0 ; data_idx < structure_length ; data_idx++)
 	   printf("%x ", adv_buf[data_idx + i]); 
 	printf("\n");
+
+
+	/*
+	 * Check for an Apple device! 
+	 */ 
+	if (structure_type == MANUFACTURER_INFO_TYPE) 
+	    if (adv_buf[i] == APPLE) /* First byte of the data */
+		printf("\t\t\tFound an Apple device!\n");
 
 
 	/*
