@@ -119,22 +119,15 @@ void ble_evt_adv_report(ble_evt_t const* p_ble_evt)
 	/*
 	 * **** Check for the secret message in the manufacturer's info! **** 
 	 */ 
+#if 1
 	if (structure_type == MANUFACTURER_INFO_TYPE)
 	{
 	    printf("\t\t\tsecret: ");
-	    const unsigned start_manu_info_index = 2; /* First two bytes are the actual manu ID */
-	    for (data_idx = start_manu_info_index ; data_idx < structure_length ; data_idx++)
-	    {
-		/*
-		 * Print as a string until hitting the null character (0x00)
-		 */ 
-		if (!(adv_buf[data_idx + i])) break;
-		printf("%s", adv_buf[data_idx + i]); 
-	    }
-	    
-	    printf("\n");
+	    const int start_manu_info_index = 2; /* First two bytes are the actual manu ID */
+	    char *secret_message = ((char *) (adv_buf + start_manu_info_index + i)); 
+	    printf("%s\r\n", secret_message);
 	} 
-
+#endif
 
 	/*
 	 * Set the buffer index, increment the structure no. 
