@@ -24,7 +24,8 @@ static simple_ble_config_t ble_config = {
 };
 simple_ble_app_t* simple_ble_app;
 
-
+#define SCAN_DEBUG 0
+#define DEBUG_PRINTF if (SCAN_DEBUG) printf
 #define FILTER 1
 #define MAX_ADDR_BYTES 6
 #define STRUCTURE_TYPE_SIZE 1
@@ -53,8 +54,8 @@ void ble_evt_adv_report(ble_evt_t const* p_ble_evt)
     /*
      * Output the advertisement payload length
      */ 
-    printf("Received an advertisement! Parsing ...\n");
-    printf(
+    DEBUG_PRINTF("Received an advertisement! Parsing ...\n");
+    DEBUG_PRINTF(
 	"\tadv_len: \t%u\n",
 	adv_len
     );
@@ -64,18 +65,18 @@ void ble_evt_adv_report(ble_evt_t const* p_ble_evt)
      * Print out the advertisement address (6 bytes)
      */ 
     int i;
-    printf("\tble_addr: \t");
-    for (i = 0 ; i < MAX_ADDR_BYTES ; i++) printf("%x ", ble_addr[i]);
-    printf("\n");
+    DEBUG_PRINTF("\tble_addr: \t");
+    for (i = 0 ; i < MAX_ADDR_BYTES ; i++) DEBUG_PRINTF("%x ", ble_addr[i]);
+    DEBUG_PRINTF("\n");
 
 
 
     /*
      * Print out the advertisement buffer in full
      */ 
-    printf("\tadv_buf: \t"); 
-    for (i = 0 ; i < adv_len ; i++) printf("%x ", adv_buf[i]);
-    printf("\n");
+    DEBUG_PRINTF("\tadv_buf: \t"); 
+    for (i = 0 ; i < adv_len ; i++) DEBUG_PRINTF("%x ", adv_buf[i]);
+    DEBUG_PRINTF("\n");
 
 
     /*
@@ -86,7 +87,7 @@ void ble_evt_adv_report(ble_evt_t const* p_ble_evt)
     i = 0; int num_structure = 0;
     while(i < adv_len) 
     {
-	printf("\n\t\tStructure %d\n", num_structure);
+	DEBUG_PRINTF("\n\t\tStructure %d\n", num_structure);
     
 
 	/*
@@ -94,7 +95,7 @@ void ble_evt_adv_report(ble_evt_t const* p_ble_evt)
 	 * output, and increment the buffer index
 	 */ 
 	uint8_t structure_length = adv_buf[i] - STRUCTURE_TYPE_SIZE;
-	printf("\t\t\tstructure_length: %x\n", structure_length); 
+	DEBUG_PRINTF("\t\t\tstructure_length: %x\n", structure_length); 
 	i++;
 
 
@@ -102,18 +103,18 @@ void ble_evt_adv_report(ble_evt_t const* p_ble_evt)
 	 * Fetch the type, output, and increment buffer index 
 	 */ 
 	uint8_t structure_type = adv_buf[i];
-	printf("\t\t\tstructure_type: %x\n", structure_type); 
+	DEBUG_PRINTF("\t\t\tstructure_type: %x\n", structure_type); 
 	i++;
 
 
 	/*
 	 * Iterate through the data and print it out 
 	 */ 
-	printf("\t\t\tstructure_data: ");
+	DEBUG_PRINTF("\t\t\tstructure_data: ");
 	int data_idx;
 	for (data_idx = 0 ; data_idx < structure_length ; data_idx++)
-	   printf("%x ", adv_buf[data_idx + i]); 
-	printf("\n");
+	   DEBUG_PRINTF("%x ", adv_buf[data_idx + i]); 
+	DEBUG_PRINTF("\n");
 
 
 	/*
@@ -122,10 +123,10 @@ void ble_evt_adv_report(ble_evt_t const* p_ble_evt)
 #if 1
 	if (structure_type == MANUFACTURER_INFO_TYPE)
 	{
-	    printf("\t\t\tsecret: ");
+	    DEBUG_PRINTF("\t\t\tsecret: ");
 	    const int start_manu_info_index = 2; /* First two bytes are the actual manu ID */
 	    char *secret_message = ((char *) (adv_buf + start_manu_info_index + i)); 
-	    printf("%s\r\n", secret_message);
+	    printf("%s\r ", secret_message);
 	} 
 #endif
 
