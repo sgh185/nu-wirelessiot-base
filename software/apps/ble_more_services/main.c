@@ -33,41 +33,31 @@ static simple_ble_service_t led_service = {{
 /*
  * State necessary to handle LED blinking
  */ 
-#define DELAY_PERIOD 500
+#define DELAY_PERIOD 1000
 static simple_ble_char_t led_blink_state_char = {.uuid16 = 0x1089};
 static bool led_blink_state = false;
-
-static void _handle_blink(ble_evt_t const *p_ble_evt)
+static void _handle_blink_event(ble_evt_t const *p_ble_evt)
 {
     /*
-     * Check for LED characteristic
+     * Check for LED characteristic 
      */
     if (!(simple_ble_is_char_event(p_ble_evt, &led_blink_state_char))) return;
-    printf("_handle_blink: current state: %d\n", led_blink_state); 
 
 
     /*
-     * Turn off the LED if necessary
-     */ 
-    if (!led_blink_state)
-    {
-	printf("_handle_blink: turning off the lights ...\n");
-	nrf_gpio_pin_clear(LED1);
-	return;
-    }
-
-
-    /*
-     * Otherwise, blink the lights
+     * Turn off the LED if "led_blink_state" is 
+     * not set --- otherwise, the global can only
+     * *pause* the LED in its state when unset 
      */
-    printf("_handle_blink: turning on the lights ...\n");
-    while (1)
-    {
-	// nrf_delay_ms(DELAY_PERIOD);
-	nrf_gpio_pin_toggle(LED1);
-    }	
+    if (!led_blink_state) nrf_gpio_pin_set(LED1);
 
 
+    /*
+     * Debugging
+     */ 
+    printf("_handle_blink_event: led_blink_state is now %d\n", led_blink_state);
+
+    
     return;
 }
 
@@ -77,8 +67,7 @@ static void _handle_blink(ble_evt_t const *p_ble_evt)
  */ 
 static simple_ble_char_t led_print_state_char = {.uuid16 = 0x1090};
 static char print_buf[32];
-
-static void _handle_printing(ble_evt_t const *p_ble_evt)
+static void _handle_printing_event(ble_evt_t const *p_ble_evt)
 {
     /*
      * Check for printing characteristic
@@ -89,7 +78,9 @@ static void _handle_printing(ble_evt_t const *p_ble_evt)
     /*
      * Print out the buffer 
      */ 
-    printf("_handle_printing: current state: %s\n", print_buf); 
+    printf("_handle_printing_event: current state: %s\n", print_buf); 
+
+
     return;
 }
 
@@ -113,13 +104,13 @@ void ble_evt_write(ble_evt_t const* p_ble_evt)
     /*
      * Handle LED blinking characteristic
      */ 
-    _handle_blink(p_ble_evt);
+    _handle_blink_event(p_ble_evt);
 
 
     /*
      * Handle printing characteristic
      */
-    _handle_printing(p_ble_evt);
+    _handle_printing_event(p_ble_evt);
 
 
     return;
@@ -127,30 +118,72 @@ void ble_evt_write(ble_evt_t const* p_ble_evt)
 
 int main(void) {
 
-  printf("Board started. Initializing BLE: \n");
+    printf("Board started. Initializing BLE: \n");
 
-  // Setup LED GPIO
-  nrf_gpio_cfg_output(LED1);
+    // Setup LED GPIO
+    nrf_gpio_cfg_output(LED1);
+    nrf_gpio_pin_set(LED1);
+    
 
-  // Setup BLE
-  simple_ble_app = simple_ble_init(&ble_config);
+    // Setup BLE
+    simple_ble_app = simple_ble_init(&ble_config);
 
-  simple_ble_add_service(&led_service);
-
-  simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(led_blink_state), (uint8_t*)&led_blink_state,
-      &led_service, &led_blink_state_char);
-
-  simple_ble_add_characteristic(1, 1, 0, 0,
-      sizeof(print_buf), (uint8_t*)&print_buf,
-      &led_service, &led_print_state_char);
+    simple_ble_add_service(&led_service);
 
 
-  // Start Advertising
-  simple_ble_adv_only_name();
+    /*
+     * Add blinking
+     */ 
+    simple_ble_add_characteristic(
+	1, 1, 0, 0,
+	sizeof(led_blink_state), (uint8_t*)&led_blink_state,
+	&led_service, &led_blink_state_char
+    );
 
-  while(1) {
-    power_manage();
-  }
+
+    /*
+     * Add printing
+     */ 
+    simple_ble_add_characteristic(
+	1, 1, 0, 0,
+	sizeof(print_buf), (uint8_t*)&print_buf,
+	&led_service, &led_print_state_char
+    );
+
+
+    /*
+     * Add buttons
+     */ 
+
+
+    /*
+     * Start advertising
+     */ 
+    simple_ble_adv_only_name();
+
+
+    /*
+     * Acrobatics --- Blink and notify if possible
+     */ 
+    while(1) 
+    {
+	/*
+	 * Delay first
+	 */ 
+	nrf_delay_ms(DELAY_PERIOD);
+
+
+	/*
+	 * Toggle the LED IFF "led_blink_state" is set
+	 */ 
+	if (led_blink_state) nrf_gpio_pin_toggle(LED1);
+
+
+	/*
+	 * Notify based on the current global state
+	 */ 
+
+    }
+
 }
 
