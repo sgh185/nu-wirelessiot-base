@@ -12,6 +12,8 @@
 
 #include "nrf52840dk.h"
 
+#define AI __attribute__((always_inline)) inline
+
 // Intervals for advertising and connections
 static simple_ble_config_t ble_config = {
   // c0:98:e5:4e:xx:xx
@@ -33,10 +35,10 @@ static simple_ble_service_t led_service = {{
 /*
  * State necessary to handle LED blinking
  */ 
-#define DELAY_PERIOD 1000
+#define DELAY_PERIOD 200
 static simple_ble_char_t led_blink_state_char = {.uuid16 = 0x1089};
 static bool led_blink_state = false;
-static void _handle_blink_event(ble_evt_t const *p_ble_evt)
+AI static void _handle_blink_event(ble_evt_t const *p_ble_evt)
 {
     /*
      * Check for LED characteristic 
@@ -50,6 +52,7 @@ static void _handle_blink_event(ble_evt_t const *p_ble_evt)
      * *pause* the LED in its state when unset 
      */
     if (!led_blink_state) nrf_gpio_pin_set(LED1);
+    else nrf_gpio_pin_clear(LED1);
 
 
     /*
@@ -65,14 +68,15 @@ static void _handle_blink_event(ble_evt_t const *p_ble_evt)
 /*
  * State necessary to handle printing 
  */ 
-static simple_ble_char_t led_print_state_char = {.uuid16 = 0x1090};
-static char print_buf[32];
-static void _handle_printing_event(ble_evt_t const *p_ble_evt)
+#define BUF_SIZE 32
+static simple_ble_char_t print_state_char = {.uuid16 = 0x1090};
+static char print_buf[BUF_SIZE];
+AI static void _handle_printing_event(ble_evt_t const *p_ble_evt)
 {
     /*
      * Check for printing characteristic
      */
-    if (!(simple_ble_is_char_event(p_ble_evt, &led_print_state_char))) return;
+    if (!(simple_ble_is_char_event(p_ble_evt, &print_state_char))) return;
 
 
     /*
@@ -81,15 +85,57 @@ static void _handle_printing_event(ble_evt_t const *p_ble_evt)
     printf("_handle_printing_event: current state: %s\n", print_buf); 
 
 
+    /*
+     * Reset the buffer --- it's possible the uploaded text
+     * in a subsequent write has fewer characters than an
+     * older write, but the older write's chars will stay
+     * in the buffer and get printed
+     */ 
+    memset(
+	print_buf,
+	0,
+	BUF_SIZE
+    );
+
+
     return;
 }
 
 
 /*
- * State necessary to handle buttons
+ * State necessary to handle buttons 
  */ 
-static simple_ble_char_t led_button_state_char = {.uuid16 = 0x1091};
-static uint8_t button_no;
+#define BUTTON_DEBUG 0
+#define BUTTON_PRINT if (BUTTON_DEBUG) printf
+
+#define BUTTON_ID_VAR(num) static uint8_t BUTTON##num##_id = num;  
+#define BUTTON_IDS \
+    BUTTON_ID_VAR(1) \
+    BUTTON_ID_VAR(2) \
+    BUTTON_ID_VAR(3) \
+    BUTTON_ID_VAR(4)
+
+BUTTON_IDS
+
+#define BUTTON_HANDLER(num) if (!(nrf_gpio_pin_read(BUTTON##num))) { button_no = BUTTON##num##_id; }
+#define HANDLE_ALL_BUTTONS \
+    BUTTON_HANDLER(1) \
+    BUTTON_HANDLER(2) \
+    BUTTON_HANDLER(3) \
+    BUTTON_HANDLER(4)
+
+
+static simple_ble_char_t button_state_char = {.uuid16 = 0x1091};
+static uint32_t button_no = 0;
+AI static void _handle_button_presses(void)
+{
+    /*
+     * Set "button_no" global to the button pressed
+     */
+    HANDLE_ALL_BUTTONS
+    BUTTON_PRINT("_handle_button_presses: button_no is now %lu\n", button_no); 
+    return;
+}
 
 
 
@@ -122,8 +168,18 @@ int main(void) {
 
     // Setup LED GPIO
     nrf_gpio_cfg_output(LED1);
+    nrf_gpio_cfg_output(LED2);
+    nrf_gpio_cfg_output(LED3);
+    nrf_gpio_cfg_output(LED4);
     nrf_gpio_pin_set(LED1);
-    
+    nrf_gpio_pin_set(LED2);
+    nrf_gpio_pin_set(LED3);
+    nrf_gpio_pin_set(LED4);
+    nrf_gpio_cfg_input(BUTTON1, NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_input(BUTTON2, NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_input(BUTTON3, NRF_GPIO_PIN_PULLUP);
+    nrf_gpio_cfg_input(BUTTON4, NRF_GPIO_PIN_PULLUP);
+
 
     // Setup BLE
     simple_ble_app = simple_ble_init(&ble_config);
@@ -147,13 +203,18 @@ int main(void) {
     simple_ble_add_characteristic(
 	1, 1, 0, 0,
 	sizeof(print_buf), (uint8_t*)&print_buf,
-	&led_service, &led_print_state_char
+	&led_service, &print_state_char
     );
 
 
     /*
      * Add buttons
      */ 
+    simple_ble_add_characteristic(
+	1, 0, 1, 0,
+	sizeof(button_no), (uint8_t*)&button_no,
+	&led_service, &button_state_char
+    );
 
 
     /*
@@ -176,13 +237,15 @@ int main(void) {
 	/*
 	 * Toggle the LED IFF "led_blink_state" is set
 	 */ 
-	if (led_blink_state) nrf_gpio_pin_toggle(LED1);
+	if (led_blink_state) nrf_gpio_pin_toggle(button_no);
 
 
 	/*
-	 * Notify based on the current global state
+	 * Write to "random_value" and notify based on the
+	 * current global state
 	 */ 
-
+	_handle_button_presses();
+	simple_ble_notify_char(&button_state_char);
     }
 
 }
