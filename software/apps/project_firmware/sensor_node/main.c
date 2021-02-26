@@ -14,13 +14,24 @@
 
 #include "nrf52840dk.h"
 
+#include "config.h"
+
 #define AI __attribute__((always_inline)) inline
+
+/*
+ * Sensor node state
+ */
+static const uint32_t device_ID = DEVICE_ID;
+static const uint32_t layer_ID = LAYER_ID;
+static const uint32_t flags = DEVICE_FLAGS;
+static const uint32_t parking_ID = PARKING_ID;
+
 
 // Intervals for advertising and connections
 static simple_ble_config_t ble_config = {
   // c0:98:e5:4e:xx:xx
   .platform_id       = 0x4E,    // used as 4th octect in device BLE address
-  .device_id         = 0xAABB,
+  .device_id         = device_ID,
   .adv_name          = "Nordic_Blinky", // used in advertisements if there is room
   .adv_interval      = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
   .min_conn_interval = MSEC_TO_UNITS(500, UNIT_1_25_MS),
@@ -32,6 +43,44 @@ static simple_ble_service_t button_service = {{
               0xB5,0x4D,0x22,0x2B,0x88,0x10,0xE6,0x32}
 }};
 
+#define NUM_ENTRIES 64
+#define DEVICE_ENTRY 0
+#define LAYER_ENTRY 1
+#define FLAGS_ENTRY 2
+#define PARKING_ENTRY 3
+#define DATA_START 4
+
+static simple_ble_char_t button_state_char = {.uuid16 = 0x1091};
+static uint32_t device_state[64];
+
+
+/*
+ * Sensor-node specific initialization
+ */
+void initialize_sensor_device_state(void)
+{
+    /*
+     * Zero out the device state
+     */
+    memset(
+	device_state,
+	0,
+	sizeof(uint32_t) * NUM_ENTRIES
+    );
+
+
+    /*
+     * Initialize the device state according to the
+     * data/state encoding for each sensor device
+     */ 
+    device_state[DEVICE_ENTRY] = device_ID;
+    device_state[LAYER_ENTRY] = layer_ID;
+    device_state[FLAGS_ENTRY] = flags;
+    device_state[PARKING_ENTRY] = parking_ID;
+
+
+    return;
+}
 
 
 /*
@@ -41,7 +90,7 @@ static simple_ble_service_t button_service = {{
  * enable simplicity in debugging and building the rest of 
  * the system in BLE. 
  */ 
-#define BUTTON_DEBUG 0
+#define BUTTON_DEBUG 1
 #define BUTTON_PRINT if (BUTTON_DEBUG) printf
 
 #define BUTTON_ID_VAR(num) static uint8_t BUTTON##num##_id = num;  
@@ -54,16 +103,13 @@ static simple_ble_service_t button_service = {{
 BUTTON_IDS
 
 // #define BUTTON_HANDLER(num) if (!(nrf_gpio_pin_read(BUTTON##num))) { button_no = BUTTON##num##_id; }
-#define BUTTON_HANDLER(num) case BUTTON##num : { button_no = BUTTON##num##_id; nrf_gpio_pin_toggle(LED##num); break; }
+#define BUTTON_HANDLER(num) case BUTTON##num : { device_state[DATA_START] = BUTTON##num##_id; nrf_gpio_pin_toggle(LED##num); break; }
 #define HANDLE_ALL_BUTTONS \
     BUTTON_HANDLER(1) \
     BUTTON_HANDLER(2) \
     BUTTON_HANDLER(3) \
     BUTTON_HANDLER(4)
 
-
-static simple_ble_char_t button_state_char = {.uuid16 = 0x1091};
-static uint32_t button_no = 0;
 
 
 /*
@@ -84,7 +130,7 @@ void button_handler(
     /*
      * Perform BLE notifications
      */
-    BUTTON_PRINT("_handle_button_presses: button_no is now %lu\n", button_no); 
+    BUTTON_PRINT("_handle_button_presses: button_no is now %lu\n", device_state[DATA_START]);
     simple_ble_notify_char(&button_state_char);
      
     
@@ -170,11 +216,17 @@ int main(void)
 
 
     /*
+     * Set up sensor device state
+     */ 
+    initialize_sensor_device_state();
+
+
+    /*
      * Add buttons
      */ 
     simple_ble_add_characteristic(
 	1, 0, 1, 0,
-	sizeof(button_no), (uint8_t*)&button_no,
+	sizeof(device_state), (uint8_t*)&device_state,
 	&button_service, &button_state_char
     );
 
