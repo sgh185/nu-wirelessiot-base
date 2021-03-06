@@ -5,6 +5,11 @@
 
 
 /*
+ * NOTE --- See sensor_device.h for global state, declarations, etc.
+ */
+
+
+/*
  * ---------- Timer Settings ----------
  */ 
 #define SCHED_QUEUE_SIZE 32
@@ -12,21 +17,9 @@
 
 
 /*
- * Timer definition for per-magnetometor update
+ * Timer definition for magnetometor update
  */ 
 APP_TIMER_DEF(sensor_update_timer);
-
-
-/*
- * Timer definition for sensor advertising interval
- */ 
-APP_TIMER_DEF(sensor_adv_timer);
-
-
-/*
- * Timer definition for sensor acknowledgement timeout
- */ 
-APP_TIMER_DEF(sensor_ack_timer);
 
 
 /*
@@ -36,7 +29,55 @@ simple_ble_app_t* simple_ble_app;
 
 
 /*
- * ---------- Callbacks ----------
+ * ---------- Helpers ----------
+ */ 
+AI void start_ads_and_scans(void)
+{
+    /*
+     * TOP --- Start advertising "the_ad," start scanning 
+     * for acknowledgements, and set status flags
+     */ 
+    is_advertising_and_scanning = true;
+    simple_ble_adv_raw(the_ad, AD_SIZE);
+    scanning_start();
+
+
+    return;
+}
+
+
+AI void stop_ads_and_scans(void)
+{
+    /*
+     * TOP --- Stop advertising "the_ad", stop scans, and
+     * reset status flag for acks and scans
+     */ 
+    is_advertising_and_scanning = false;
+    advertising_stop();
+    scanning_stop();
+
+
+    return;
+}
+
+
+static bool filter_for_this_node(void)
+{
+    /*
+     * Filter for this ndoe based on the following attributes:
+     * - Device ID
+     * - Device Layer
+     * 
+     * NOTE --- Sensor nodes do NOT compare message IDs. The 
+     * invariant is that relayer nodes must process the correct
+     * acks at the correct times for the proper target device
+     */
+}
+
+
+ 
+/*
+ * ---------- Callbacks/Handlers ----------
  */ 
 void update_callback(void *context)
 {
@@ -47,6 +88,14 @@ void update_callback(void *context)
      * data if necessary, package the corresponding data
      * into an advertisement, and start sending
      */ 
+
+
+    /*
+     * If we're still advertising and scanning from the previous
+     * iteration, stop all prior ads/scans before proceeding
+     */ 
+    if (is_advertising_and_scanning) stop_ads_and_scans();
+
 
     /*
      * Fetch the magnetometor data, do nothing if 
@@ -63,69 +112,72 @@ void update_callback(void *context)
  
 
     /*
-     * Formulate the new advertisement to send, and
-     * start sending new data
+     * Formulate the new advertisement to send, start 
+     * sending new data, and start scanning for acks
      */ 
     rebuild_ad_package();
-    simple_ble_adv_raw(the_ad, AD_SIZE);
-
-
-    /*
-     * Start the advertisement timeout timer --- this
-     * will dictate how long we advertise new info for
-     */ 
-    app_timer_start(sensor_adv_timer, APP_TIMER_TICKS(ADV_INTERVAL), NULL);
+    start_ads_and_scans();
 
 
     return;
 }
 
 
-void adv_callback(void *context)
+void ble_evt_adv_report (ble_evt_t const* p_ble_evt) 
 {
     /*
-     * TOP
-     *
-     * In this callback, we must have executed at least
-     * ADV_INTERVAL amount of time sending out ads. Kill
-     * the ads and switch to listening for acknowledgements
-     * (i.e. ads) from the relayers in the layer above
+     * TOP --- Event handler for receiving an advertisement
+     * during the ads/scans phase --- filter ads and process
+     * only ads that pertain to this particular node
      */ 
+
+    /*
+     * Fetch event data/info
+     */ 
+    ble_gap_evt_adv_report_t const *adv_report = &(p_ble_evt->evt.gap_evt.params.adv_report);
+    uint8_t const *ble_addr = adv_report->peer_addr.addr; // array of 6 bytes of the address
+    uint8_t *adv_buf = adv_report->data.p_data; // array of up to 31 bytes of advertisement payload data
+    uint16_t *adv_len = adv_report->data.len; // length of advertisement payload data
+
+
+    /*
+     * Filter the info for this device 
+     */ 
+    if (!filter_for_this_node(ble_addr, adv_buf, adv_len)) return;
+
+
+    /*
+     * Got info specifically for this device! If this device
+     * has already received an ack (i.e. it's stopped advertising
+     * and scanning) don't do anything else!
+     */
+    if (!is_advertising_and_scanning) return;
+
+
+    /*
+     * Restructure the data as an acknowledgement
+     */ 
+    ack *the_ack = 
+	process_event_as_ack(
+	    adv_buf, 
+	    adv_len
+	);
    
-    /*
-     * We're done advertising for now --- stop
-     */  
-    advertising_stop();
-
 
     /*
-     * Start the timer for the acknowledgement listening
-     * period --- NOTE --- this MUST execute before scanning
-     * because found ads will generate events and process
+     * Process the acknowledgement --- perform any system-wide
+     * or device-specific commands originating from the central
+     * device (i.e. it's night time or resend data, etc.) 
+     *
+     * This call will turn off advertising/scanning
      */
-    app_timer_start(sensor_ack_timer, APP_TIMER_TICKS(ACK_INTERVAL), NULL);
-
-
-    /*
-     * Start listening for acknowledgements 
-     */
-    scanning_start();
+    process_ack(the_ack); 
 
 
     return;
 }
 
 
-void ack_callback(void *context)
-{
-    /*
-     * TOP 
-     *
-     * In this callback, we've timed out --- i.e. we haven't
-     * heard back from the relayer nodes on if it's received
-     * the data the sensor node has sent. We'll try again.
-     */ 
-}
 
 
 int main(void) 
@@ -154,16 +206,9 @@ int main(void)
 
 
     /*
-     * Create all three timers
+     * Create and staart timer
      */ 
     app_timer_create(&sensor_update_timer, APP_TIMER_MODE_REPEATED, update_callback);	
-    app_timer_create(&sensor_adv_timer, APP_TIMER_MODE_SINGLE_SHOT, adv_callback);	
-    app_timer_create(&sensor_ack_timer, APP_TIMER_SINGLE_SHOT, ack_callback); 
-
-    
-    /*
-     * Start update timer
-     */
     app_timer_start(sensor_update_timer, APP_TIMER_TICKS(UPDATE_INTERVAL), NULL);
 
 
