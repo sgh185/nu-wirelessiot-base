@@ -64,6 +64,7 @@ extern uint8_t ad_flags_info;
 #define POS_TDEV_ID 2
 #define POS_TLAYER_ID 3
 #define POS_SECTOR_NO 4
+#define DEFAULT_SECTOR_NO 0
 extern uint8_t ad_did_info[DID_LEN - 1];
 
 
@@ -95,11 +96,11 @@ bool _get_bit(
 #define get_direction_flag() _get_bit(ad_flags_info, POS_DIRECTION) 
 #define get_ack_flag() _get_bit(ad_flags_info, POS_IS_ACK) 
 
-#define set_occupied_flag(bit) _set_bit(ad_flags_info, POS_IS_OCCUPIED, bit) 
-#define set_redundancy_flag(bit) _set_bit(ad_flags_info, POS_REDUNDANCY, bit) 
-#define set_relay_flag(bit) _set_bit(ad_flags_info, POS_IS_RELAY, bit) 
-#define set_direction_flag(bit) _set_bit(ad_flags_info, POS_DIRECTION, bit) 
-#define set_ack_flag(bit) _set_bit(ad_flags_info, POS_IS_ACK, bit) 
+#define set_occupied_flag(bit) ad_flags_info = _set_bit(ad_flags_info, POS_IS_OCCUPIED, bit) 
+#define set_redundancy_flag(bit) ad_flags_info = _set_bit(ad_flags_info, POS_REDUNDANCY, bit) 
+#define set_relay_flag(bit) ad_flags_info = _set_bit(ad_flags_info, POS_IS_RELAY, bit) 
+#define set_direction_flag(bit) ad_flags_info = _set_bit(ad_flags_info, POS_DIRECTION, bit) 
+#define set_ack_flag(bit) ad_flags_info = _set_bit(ad_flags_info, POS_IS_ACK, bit) 
 
 
 /*
@@ -118,9 +119,10 @@ bool _get_bit(
 #define set_sector_num(val) ad_did_info[POS_SECTOR_NO] = val
 
 
+/*
+ * Initializers 
+ */ 
+void initialize_ad_for_sensor_device(void);
 
-
-
-
-
+void initialize_ad_for_relayer_device(void);
 
