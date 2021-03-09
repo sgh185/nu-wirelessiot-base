@@ -7,9 +7,17 @@
 /*
  * ---------- Definitions ----------
  */ 
-uint8_t the_ad[AD_SIZE] = { 0 };
-uint8_t ad_flags_info = 0;
-uint8_t ad_did_info[DID_LEN - 1] = { 0 };
+uint8_t the_ad[AD_SIZE] = {
+    
+    /* Flags structure */ 
+    0x02 /* len */, 0x01 /* tid */, 0,  
+    
+    /* Manu info structure */ 
+    0x08 /* len */, 0xFF /* tid */, 0, 0, 0, 0, 0, 0x00 /* mi.0 */, 0x31 /* mi.1 */ 
+
+};
+
+uint8_t manu_info[MANU_INFO_SIZE] = { 0x00, 0x31 } ;
 
 
 /*
@@ -53,15 +61,14 @@ void initialize_ad_for_sensor_device(void)
      * - Not occupied, not relaying, sending up (i.e. 0), not
      *   an ack. (Redundancy off as default)
      *
-     * Device ID structure should be initialized instead
+     * Manu info. structure should be initialized instead
      * - Sender info can be filled out, target info can stay
      *   zeroed since that signifies the central node anyway
-     *   (where device ID and layer ID are both 0). Sector
-     *   number is default 0. 
+     *   (where device ID and layer ID are both 0).  
      */     
     set_sender_device_id(device_ID);
     set_sender_layer_id(layer_ID);
-    set_sector_num(DEFAULT_SECTOR_NO); 
+    set_sender_parking_id(parking_ID);
 
 
     return;
@@ -77,15 +84,13 @@ void initialize_ad_for_relayer_device(void)
      * except for the relaying flag (which should obviously 
      * be set)
      *
-     * Device ID structure should be initialized instead
+     * Manu. info structure should be initialized instead
      * - Sender info can be filled out, target info can stay
-     *   zeroed, and left subject to change over time. Sector
-     *   number is default 0. 
+     *   zeroed, and left subject to change over time. 
      */     
     set_relay_flag(1); 
     set_sender_device_id(device_ID);
     set_sender_layer_id(layer_ID);
-    set_sector_num(DEFAULT_SECTOR_NO); 
 
 
     return;
