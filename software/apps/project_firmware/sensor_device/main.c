@@ -174,10 +174,14 @@ int main(void)
      */  
     simple_ble_app = simple_ble_init(&ble_config);
 
-   
+
     /*
-     * Initialize scheduler, timers
+     * Initialization
      */ 
+    initialize_device_state(sensor);
+
+    initialize_ad(sensor);     
+    
     APP_SCHED_INIT(
 	SCHED_EVENT_DATA_SIZE, 
 	SCHED_QUEUE_SIZE
