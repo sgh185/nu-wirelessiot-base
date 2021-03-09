@@ -121,11 +121,11 @@ icm20948_measurement_t icm20948_read_magnetometer() {
   int16_t z_val = (((uint16_t)rx_buf[6]) << 8) | rx_buf[5];
 
   // convert to g
-  // coversion is 0.6 uT/LSB
+  // data is twos complement number that needs to be multiplied by 0.15
   icm20948_measurement_t measurement = {0};
-  measurement.x_axis = ((float)x_val) * 0.6;
-  measurement.y_axis = ((float)y_val) * 0.6;
-  measurement.z_axis = ((float)z_val) * 0.6;
+  measurement.x_axis = ((float)x_val); //* 0.15;
+  measurement.y_axis = ((float)y_val); //* 0.15;
+  measurement.z_axis = ((float)z_val); //* 0.15;
 
   return measurement;
 }

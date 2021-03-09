@@ -114,6 +114,7 @@ typedef enum {
 	AK09916_HYH = 0x14,
 	AK09916_HZL = 0x15,
   AK09916_HZH = 0x16,
+  AK09916_TMPS = 0x17,
   //
   AK09916_ST2 = 0x18,
   AK09916_CNTL2 = 0x31,

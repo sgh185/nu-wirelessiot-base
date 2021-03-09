@@ -27,6 +27,7 @@
 #define SCL_PIN NRF_GPIO_PIN_MAP(0,28)
 #define SDA_PIN NRF_GPIO_PIN_MAP(0,4)
 
+
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 
@@ -53,10 +54,10 @@ int main(void){
 
   // check magnetometer reading
   if (icm20948_check_magnetometer()){
-    printf("magnetometercheck is true");
+    printf("magnetometercheck is true\n");
   }
   else{
-    printf("magnetometer check is false");
+    printf("magnetometer check is false\n");
   }
 
   // loop
@@ -71,6 +72,6 @@ int main(void){
     printf("\n");
 
     // wait
-    nrf_delay_ms(100);
+    nrf_delay_ms(1000);
   }
 }
