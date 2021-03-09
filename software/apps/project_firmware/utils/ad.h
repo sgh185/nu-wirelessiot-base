@@ -27,9 +27,12 @@
  * data: 0xFF (tid) 	0x?? (sdid)	0x?? (slid)	0x?? (tdid)
  *
  * indx: 8		9		10		11
- * data: 0x?? (tlid)	0x?? (pid)	0x0 (mi)	0x31 (mi)
+ * data: 0x?? (tlid)	0x?? (pid)	0x?? (seq)	0x00 (mi.0)
+ *
+ * indx: 12		
+ * data: 0x31 (mi.1)
  */ 
-#define AD_SIZE 12 /* (1 + FLAGS_LEN) + (1 + MANU_LEN) */
+#define AD_SIZE 13 /* (1 + FLAGS_LEN) + (1 + MANU_LEN) */
 extern uint8_t the_ad[AD_SIZE];
 
 
@@ -71,7 +74,9 @@ extern uint8_t the_ad[AD_SIZE];
 #define POS_TDEV_ID (2 + MANU_OFFSET)
 #define POS_TLAYER_ID (3 + MANU_OFFSET)
 #define POS_PARKING_ID (4 + MANU_OFFSET) 
-#define POS_MANU_INFO (5 + MANU_OFFSET)
+#define POS_SEQ_NO (5 + MANU_OFFSET) 
+#define POS_MANU_INFO (6 + MANU_OFFSET)
+extern uint8_t seq_no;
 extern uint8_t manu_info[MANU_INFO_SIZE]; /* Variable for MANU_INFO */
 
 /* TBD */
@@ -122,12 +127,18 @@ bool _get_bit(
 #define get_target_device_id() the_ad[POS_TDEV_ID]
 #define get_target_layer_id() the_ad[POS_TLAYER_ID]
 #define get_sender_parking_id() the_ad[POS_PARKING_ID]
+#define get_sender_seq_no() the_ad[POS_SEQ_NO]
 
 #define set_sender_device_id(val) the_ad[POS_SDEV_ID] = val
 #define set_sender_layer_id(val) the_ad[POS_SLAYER_ID] = val
 #define set_target_device_id(val) the_ad[POS_TDEV_ID] = val
 #define set_target_layer_id(val) the_ad[POS_TLAYER_ID] = val
 #define set_sender_parking_id(val) the_ad[POS_PARKING_ID] = val
+
+#define MAX_SEQ_NO 255
+#define set_sender_seq_no(val) the_ad[POS_SEQ_NO] = val
+#define incr_generic_seq_no(val) ((val + 1) % MAX_SEQ_NO)
+#define incr_device_seq_no() set_sender_seq_no((seq_no = incr_generic_seq_no(seq_no)))
 
 /* TBD */ 
 #define get_sector_num() the_ad[POS_SECTOR_NO]
@@ -156,6 +167,7 @@ void initialize_ad_for_relayer_device(void);
 #define get_recv_target_device_id(buf) buf[POS_TDEV_ID]
 #define get_recv_target_layer_id(buf) buf[POS_TLAYER_ID]
 #define get_recv_sender_parking_id(buf) buf[POS_PARKING_ID]
+#define get_recv_sender_seq_no(buf) buf[POS_SEQ_NO]
 
 #define is_ad_from_a_system_device(buf) (!bcmp((buf + POS_MANU_INFO), manu_info, MANU_INFO_SIZE));
 #define is_ad_for_this_device(buf) \
