@@ -1,6 +1,7 @@
 /*
  * Code for sensor/edge nodes of the system
  */ 
+#include "ads.h"
 #include "sensor_device.h"
 
 
@@ -10,11 +11,8 @@
 
 
 /*
- * ---------- Timer Settings ----------
+ * ---------- Setup ----------
  */ 
-#define SCHED_QUEUE_SIZE 32
-#define SCHED_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE
-
 
 /*
  * Timer definition for magnetometor update
@@ -61,21 +59,6 @@ AI void stop_ads_and_scans(void)
 }
 
 
-static bool filter_for_this_node(void)
-{
-    /*
-     * Filter for this ndoe based on the following attributes:
-     * - Device ID
-     * - Device Layer
-     * 
-     * NOTE --- Sensor nodes do NOT compare message IDs. The 
-     * invariant is that relayer nodes must process the correct
-     * acks at the correct times for the proper target device
-     */
-}
-
-
- 
 /*
  * ---------- Callbacks/Handlers ----------
  */ 
@@ -89,7 +72,6 @@ void update_callback(void *context)
      * into an advertisement, and start sending
      */ 
 
-
     /*
      * If we're still advertising and scanning from the previous
      * iteration, stop all prior ads/scans before proceeding
@@ -101,21 +83,20 @@ void update_callback(void *context)
      * Fetch the magnetometor data, do nothing if 
      * there is no change in the outcome
      */ 
-    bool parking_spot_status = synthesize_data();
-    if (parking_spot_status == current_status) return;
+    bool parking_spot_status = synthesize_magnetometer_data();
+    if (parking_spot_status == get_occupied_flag()) return;
 
 
     /*
      * Set the status to the new value 
      */ 
-    current_status = parking_spot_status;
+    set_occupied_flag(parking_spot_status);
  
 
     /*
-     * Formulate the new advertisement to send, start 
-     * sending new data, and start scanning for acks
+     * We're ready to send the new advertisement 
+     * and start scanning for acks
      */ 
-    rebuild_ad_package();
     start_ads_and_scans();
 
 
@@ -143,7 +124,7 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
     /*
      * Filter the info for this device 
      */ 
-    if (!filter_for_this_node(ble_addr, adv_buf, adv_len)) return;
+    if (!is_ad_for_this_device(adv_buf)) return;
 
 
     /*

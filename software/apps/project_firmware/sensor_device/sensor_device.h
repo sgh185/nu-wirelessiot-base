@@ -2,7 +2,7 @@
  * Settings for the sensor device
  */ 
 
-#include "base_device.h"
+#include "ad.h"
 
 
 /*
@@ -12,15 +12,7 @@
 /*
  * State for advertising/scanning phase
  */ 
-____ the_ad = {};
-
 static bool is_advertising_and_scanning = false;
-
-
-/*
- * State for parking spot
- */ 
-static bool curent_status = false;
 
 
 /*
@@ -29,10 +21,10 @@ static bool curent_status = false;
 static bool is_night_time = false;
 
 
-
-
 /*
- * Sensor device configuration
+ * Sensor device configuration. NOTE --- We don't actually
+ * utilize the device_id field. Why? We forgot about it, and
+ * we don't have enough time to modify our implementation
  */ 
 static simple_ble_config_t ble_config = {
   .platform_id       = 0x4E,    
@@ -44,4 +36,11 @@ static simple_ble_config_t ble_config = {
 };
 
 
+/*
+ * ---------- Timer Info ----------
+ */ 
+#define START_UPDATE_INTERVAL 300000 /* 5 minutes, subject to change */
+#define SCHED_QUEUE_SIZE 32
+#define SCHED_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE
+static uint32_t update_interval = START_UPDATE_INTERVAL;
 
