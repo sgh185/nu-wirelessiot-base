@@ -17,7 +17,7 @@
 #include "icm20948.h"
 
 // ICM address and Magnetometer address
-static uint8_t MPU_ADDRESS = 0x68; // might be 0x69
+static uint8_t MPU_ADDRESS = 0x69; // might be 0x69 or 0x68
 static uint8_t MAG_ADDRESS = 0x0C; // magnetometer address
 
 static const nrf_twi_mngr_t* i2c_manager = NULL;
@@ -44,6 +44,7 @@ static void i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t data) {
 
 // initialization and configuration
 void icm20948_init(const nrf_twi_mngr_t* i2c) {
+  printf("initializing...\n");
   i2c_manager = i2c;
 
   // initialize a timer - the default frequency is 16MHz
@@ -56,22 +57,27 @@ void icm20948_init(const nrf_twi_mngr_t* i2c) {
   };
 
   // reset mpu, delay 100 ms
-  i2c_reg_write(MPU_ADDRESS, ICM20948_PWR_MGMT_1, 0x80);
+  printf("reset MPU\n");
+  i2c_reg_write(MPU_ADDRESS, ICM20948_PWR_MGMT_1, 0x80); // should this just be 0x8?
   nrf_delay_ms(100);
 
   // disable sleep mode
+  printf("disable sleep\n");
   i2c_reg_write(MPU_ADDRESS, ICM20948_PWR_MGMT_1, 0x00);
 
   // enable bypass mode
+  printf("enable bypass\n");
   i2c_reg_write(MPU_ADDRESS, ICM20948_USER_CTRL, 0x00);
   nrf_delay_ms(3);
   i2c_reg_write(MPU_ADDRESS, ICM20948_INT_PIN_CFG, 0x02);
 
   // reset magnetometer
+  printf("reset magnetometer\n");
   i2c_reg_write(MAG_ADDRESS, AK09916_CNTL3, 0x01);
   nrf_delay_ms(100);
 
   // configure magnetometer, enable continuous measurement mode (8 Hz)
+  printf("configure magnetometer\n");
   i2c_reg_write(MAG_ADDRESS, AK09916_CNTL2, 0x02);
 }
 
