@@ -103,6 +103,7 @@ bool _get_bit(
 );
 
 
+
 /*
  * Handlers for "flags" structure
  */ 
@@ -156,13 +157,19 @@ void initialize_ad_for_relayer_device(void);
 
 
 /*
- * Parsers (for received ads)
+ * Parsers, setters (for received ads)
  */ 
 #define get_recv_occupied_flag(buf) _get_bit(buf[FLAGS_OFFSET], POS_IS_OCCUPIED) 
 #define get_recv_redundancy_flag(buf) _get_bit(buf[FLAGS_OFFSET], POS_REDUNDANCY) 
 #define get_recv_relay_flag(buf) _get_bit(buf[FLAGS_OFFSET], POS_IS_RELAY) 
 #define get_recv_direction_flag(buf) _get_bit(buf[FLAGS_OFFSET], POS_DIRECTION) 
 #define get_recv_ack_flag(buf) _get_bit(buf[FLAGS_OFFSET], POS_IS_ACK) 
+
+#define set_recv_occupied_flag(buf, bit) buf[FLAGS_OFFSET] = _set_bit(buf[FLAGS_OFFSET], POS_IS_OCCUPIED, bit) 
+#define set_recv_redundancy_flag(buf, bit) buf[FLAGS_OFFSET] = _set_bit(buf[FLAGS_OFFSET], POS_REDUNDANCY, bit) 
+#define set_recv_relay_flag(buf, bit) buf[FLAGS_OFFSET] = _set_bit(buf[FLAGS_OFFSET], POS_IS_RELAY, bit) 
+#define set_recv_direction_flag(buf, bit) buf[FLAGS_OFFSET] = _set_bit(buf[FLAGS_OFFSET], POS_DIRECTION, bit) 
+#define set_recv_ack_flag(buf, bit) buf[FLAGS_OFFSET] = _set_bit(buf[FLAGS_OFFSET], POS_IS_ACK, bit) 
 
 #define get_recv_sender_device_id(buf) buf[POS_SDEV_ID]
 #define get_recv_sender_layer_id(buf) buf[POS_SLAYER_ID]
@@ -171,9 +178,30 @@ void initialize_ad_for_relayer_device(void);
 #define get_recv_sender_parking_id(buf) buf[POS_PARKING_ID]
 #define get_recv_sender_seq_no(buf) buf[POS_SEQ_NO]
 
-#define is_ad_from_a_system_device(buf) (!bcmp((buf + POS_MANU_INFO), manu_info, MANU_INFO_SIZE));
+#define set_recv_sender_device_id(buf, val) buf[POS_SDEV_ID] = val
+#define set_recv_sender_layer_id(buf, val) buf[POS_SLAYER_ID] = val
+#define set_recv_target_device_id(buf, val) buf[POS_TDEV_ID] = val
+#define set_recv_target_layer_id(buf, val) buf[POS_TLAYER_ID] = val
+#define set_recv_sender_parking_id(buf, val) buf[POS_PARKING_ID] = val
 
-#define is_ad_for_this_device(buf) \
+#define is_ad_from_a_system_device(buf, len) \
+({ \
+    /*
+     * Check if ad:
+     * 1) Has a length that's AD_SIZE
+     * 2) Has the "Gibson's Guitars" ID
+     */ \
+    bool from_system = \
+	(true \
+	 && len == AD_SIZE \
+	 && !bcmp((buf + POS_MANU_INFO), manu_info, MANU_INFO_SIZE)); \
+    \
+    \
+    from_system; \
+})
+
+
+#define is_ad_for_this_device(buf, len) \
 ({ \
     /*
      * Check if ad:
@@ -183,14 +211,14 @@ void initialize_ad_for_relayer_device(void);
      */ \
     bool for_this_device = \
 	(true \
-	 && is_ad_from_a_system_device(buf) \
+	 && is_ad_from_a_system_device(buf, len) \
 	 && (get_recv_target_device_id(buf) == device_ID)); \
     \
     \
     for_this_device ; \
 })
 
-#define is_ad_ack_for_this_device(buf) \
+#define is_ad_ack_for_this_device(buf, len) \
 ({ \
     /*
      * Check if ad:
@@ -199,7 +227,7 @@ void initialize_ad_for_relayer_device(void);
      */ \
     bool ack_for_this_device = \
 	(true \
-	 && is_ad_for_this_device(buf) \
+	 && is_ad_for_this_device(buf, len) \
 	 && get_recv_ack_flag(buf)); \
     \
     \
