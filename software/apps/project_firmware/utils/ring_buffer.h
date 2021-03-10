@@ -34,6 +34,9 @@ typedef struct ring_buffer_t {
 /*
  * NOTE --- This only supports the operations needed
  * in the protocol/implementation of the system
+ *
+ * NOTE --- Why are these statement expressions? b/c
+ * I didn't think this through.
  */
 
 /*
@@ -46,6 +49,23 @@ typedef struct ring_buffer_t {
  * - typeof(@rb) = ring_buffer (NOT ring_buffer *) 
  */ 
 #define _incr_rb_next(rb) (rb.next_index_to_fill = ((rb.next_index_to_fill + 1) % DEFAULT_RING_BUF_SIZE))
+
+
+/*
+ * rb_get
+ *
+ * Gets the value stored at a particular index. Performs
+ * no bounds checking.
+ *
+ * @idx:
+ * - Index of value to fetch
+ * - typeof(@idx) = uint8_t
+ *
+ * @rb
+ * - Ring buffer to work with
+ * - typeof(@rb) = ring_buffer (NOT ring_buffer *) 
+ */ 
+#define rb_get(idx, rb) (rb.buf[idx])
 
 
 /*
