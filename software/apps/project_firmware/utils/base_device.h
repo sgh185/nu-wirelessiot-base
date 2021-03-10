@@ -16,7 +16,7 @@
  * Device state
  */
 #define DEVICE_ENTRIES 64 
-static uint32_t device_state[DEVICE_ENTRIES];
+static uint8_t device_state[DEVICE_ENTRIES];
 
 #define DEVICE_ID 1
 #define LAYER_ID 1
@@ -26,10 +26,10 @@ static uint32_t device_state[DEVICE_ENTRIES];
 #define DEVICE_TYPE sensor
 #define DEVICE_NAME(type, id) "_" type "_" id "_"
 
-static const uint32_t device_ID = DEVICE_ID;
-static const uint32_t layer_ID = LAYER_ID;
-static const uint32_t flags = DEVICE_FLAGS;
-static const uint32_t parking_ID = PARKING_ID;
+static const uint8_t device_ID = DEVICE_ID;
+static const uint8_t layer_ID = LAYER_ID;
+static const uint8_t flags = DEVICE_FLAGS;
+static const uint8_t parking_ID = PARKING_ID;
 static const char *device_name = DEVICE_NAME(DEVICE_TYPE, DEVICE_ID);
 
 #define DEVICE_ENTRY 0 /* Index into @device_state, etc. */

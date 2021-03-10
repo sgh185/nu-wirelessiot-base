@@ -7,7 +7,7 @@
 /*
  * Device initialization
  */ 
-void initialize_sensor_device_state(void)
+void _initialize_sensor_device_state(void)
 {
     /*
      * Zero out the device state
