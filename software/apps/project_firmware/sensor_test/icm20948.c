@@ -71,6 +71,9 @@ void icm20948_init(const nrf_twi_mngr_t* i2c) {
   nrf_delay_ms(3);
   i2c_reg_write(MPU_ADDRESS, ICM20948_INT_PIN_CFG, 0x02);
 
+  // configure accelerometer range?
+  i2c_reg_write(MPU_ADDRESS, ICM20948_ACCEL_CONFIG, 0x00);
+
   // reset magnetometer
   printf("reset magnetometer\n");
   i2c_reg_write(MAG_ADDRESS, AK09916_CNTL3, 0x01);
@@ -79,6 +82,22 @@ void icm20948_init(const nrf_twi_mngr_t* i2c) {
   // configure magnetometer, enable continuous measurement mode (8 Hz)
   printf("configure magnetometer\n");
   i2c_reg_write(MAG_ADDRESS, AK09916_CNTL2, 0x02);
+}
+
+// read accelerometer
+icm20948_measurement_t icm20948_read_accelerometer() {
+  // read values
+  int16_t x_val = (((uint16_t)i2c_reg_read(MPU_ADDRESS, ICM20948_ACCEL_XOUT_H)) << 8) | i2c_reg_read(MPU_ADDRESS, ICM20948_ACCEL_XOUT_L);
+  int16_t y_val = (((uint16_t)i2c_reg_read(MPU_ADDRESS, ICM20948_ACCEL_YOUT_H)) << 8) | i2c_reg_read(MPU_ADDRESS, ICM20948_ACCEL_YOUT_L);
+  int16_t z_val = (((uint16_t)i2c_reg_read(MPU_ADDRESS, ICM20948_ACCEL_ZOUT_H)) << 8) | i2c_reg_read(MPU_ADDRESS, ICM20948_ACCEL_ZOUT_L);
+
+  // convert to g
+  // coversion at +/- 2 g is 16384 LSB/g
+  icm20948_measurement_t measurement = {0};
+  measurement.x_axis = ((float)x_val) / 16384;
+  measurement.y_axis = ((float)y_val) / 16384;
+  measurement.z_axis = ((float)z_val) / 16384;
+  return measurement;
 }
 
 // check magnetometer to see if it's working

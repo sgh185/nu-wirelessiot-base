@@ -33,6 +33,11 @@ bool icm20948_check_magnetometer();
 // Return measurements as floating point values in uT
 icm20948_measurement_t icm20948_read_magnetometer();
 
+// Read accelerometer (testing)
+//
+// Return
+icm20948_measurement_t icm20948_read_accelerometer();
+
 // Definitions (rewritten for icm20948)
 
 typedef enum {
@@ -101,6 +106,9 @@ typedef enum {
   ICM20948_DATA_RDY_STATUS      = 0x74,
   ICM20948_FIFO_CFG             = 0x76,
   ICM20948_REG_BANK_SEL         = 0x7F,
+
+  // from user bank 2
+  ICM20948_ACCEL_CONFIG         = 0x14,
 } ICM20948_reg_t;
 
 // Magnetometer registers
