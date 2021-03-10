@@ -113,52 +113,43 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
      */ 
 
     /*
-     * Fetch event data/info
-     */ 
-    ble_gap_evt_adv_report_t const *adv_report = &(p_ble_evt->evt.gap_evt.params.adv_report);
-    uint8_t const *ble_addr = adv_report->peer_addr.addr; // array of 6 bytes of the address
-    uint8_t *adv_buf = adv_report->data.p_data; // array of up to 31 bytes of advertisement payload data
-    uint16_t *adv_len = adv_report->data.len; // length of advertisement payload data
-
-
-    /*
-     * Filter the info for this device 
-     */ 
-    if (!is_ad_for_this_device(adv_buf)) return;
-
-
-    /*
-     * Got info specifically for this device! If this device
-     * has already received an ack (i.e. it's stopped advertising
-     * and scanning) don't do anything else!
+     * If this device has already received an ack (i.e. it's 
+     * stopped advertising and scanning) we don't do anything!
+     * 
+     * Killswitch, may be unnecessary, but in place to handle
+     * corner cases where there's overlap between interrupt 
+     * handlers and event handlers (unclear)
      */
     if (!is_advertising_and_scanning) return;
 
 
     /*
-     * Restructure the data as an acknowledgement
+     * Fetch event data/info
      */ 
-    ack *the_ack = 
-	process_event_as_ack(
-	    adv_buf, 
-	    adv_len
-	);
-   
+    ble_gap_evt_adv_report_t const *adv_report = &(p_ble_evt->evt.gap_evt.params.adv_report);
+    uint8_t *adv_buf = adv_report->data.p_data; 
+
 
     /*
-     * Process the acknowledgement --- perform any system-wide
-     * or device-specific commands originating from the central
-     * device (i.e. it's night time or resend data, etc.) 
-     *
-     * This call will turn off advertising/scanning
-     */
-    process_ack(the_ack); 
+     * Determine whether or not the advertisement is
+     * an ack for this specific device --- since we're
+     * already scanning, if the ad doesn't fit these
+     * conditions, we don't need to do anything else 
+     */ 
+    if (!is_ad_ack_for_this_device(adv_buf)) return;
 
 
+    /*
+     * At this point, we know we have an ack for this
+     * device! We have a number of options. Currently,
+     * we'll do the simplest operation --- we'll stop
+     * advertising and scanning
+     */ 
+    stop_ads_and_scans();
+    
+    
     return;
 }
-
-
 
 
 int main(void) 
@@ -191,7 +182,7 @@ int main(void)
 
 
     /*
-     * Create and staart timer
+     * Create and start timer
      */ 
     app_timer_create(&sensor_update_timer, APP_TIMER_MODE_REPEATED, update_callback);	
     app_timer_start(sensor_update_timer, APP_TIMER_TICKS(UPDATE_INTERVAL), NULL);
