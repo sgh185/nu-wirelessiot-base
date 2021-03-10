@@ -9,11 +9,8 @@
  */ 
 uint8_t the_ad[AD_SIZE] = {
     
-    /* Flags structure */ 
-    0x02 /* len */, 0x01 /* tid */, 0,  
-    
     /* Manu info structure */ 
-    0x08 /* len */, 0xFF /* tid */, 0, 0, 0, 0, 0, 0x00 /* mi.0 */, 0x31 /* mi.1 */ 
+    0x0a /* len */, 0xFF /* tid */, 0, 0, 0, 0, 0, 0, 0, 0x00 /* mi.0 */, 0x31, /* mi.1 */ 
 
 };
 
@@ -25,7 +22,7 @@ uint8_t manu_info[MANU_INFO_SIZE] = { 0x00, 0x31 } ;
  */ 
 uint8_t _set_bit(
     uint8_t octet,
-    uint8_t index
+    uint8_t index,
     bool bit 
 )
 {

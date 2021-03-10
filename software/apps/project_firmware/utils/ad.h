@@ -13,26 +13,20 @@
  * Set up advertisement array 
  *
  * @the_ad will contain two structures (tentatively):
- * - Flags (type=0x1): Contains all necessary bitwise
- *   information necessary for the system protocol
- * - Manufacturer Info (type=0xFF): Repurposed, contains
+ * - Manufacturer Info (type=0xFF): Repurposed, contains flags,
  *   all info about sender's device/layer IDs and target IDs
- *
  *
  * Layout: (0x?? indicates actual, encoded info)
  * indx: 0		1		2		3
- * data: 0x2 (len) 	0x1 (tid)	0x?? (flags)	0x8 (len)	
+ * data: 0xa (len) 	0xFF (tid)	0x?? (flags)	0x?? (sdid)	
  * 
  * indx: 4		5		6		7
- * data: 0xFF (tid) 	0x?? (sdid)	0x?? (slid)	0x?? (tdid)
+ * data: 0x?? (slid) 	0x?? (tdid)	0x?? (tlid)	0x?? (pid)
  *
- * indx: 8		9		10		11
- * data: 0x?? (tlid)	0x?? (pid)	0x?? (seq)	0x00 (mi.0)
- *
- * indx: 12		
- * data: 0x31 (mi.1)
+ * indx: 8		9		10		
+ * data: 0x?? (seq)	0x00 (mi.0)	0x31 (mi.1)
  */ 
-#define AD_SIZE 13 /* (1 + FLAGS_LEN) + (1 + MANU_LEN) */
+#define AD_SIZE 11 /* (1 + MANU_LEN) */
 extern uint8_t the_ad[AD_SIZE];
 
 
@@ -43,14 +37,12 @@ extern uint8_t the_ad[AD_SIZE];
 /*
  * Set up structure-level info
  */ 
-#define NUM_STRUCTURES 2
+#define NUM_STRUCTURES 1
 
 
 /*
  * Set up "flags" structure
  */
-#define FLAGS_TYPE 0x1
-#define FLAGS_LEN 0x2 /* 1 byte of info */
 #define FLAGS_OFFSET 2 /* Info starts at the_ad[FLAGS_OFFSET] */
 /* Bitwise for all positions */
 #define POS_IS_OCCUPIED 0  
@@ -63,9 +55,9 @@ extern uint8_t the_ad[AD_SIZE];
 /*
  * Set up "device ID" structure
  */ 
-#define MANU_TYPE 0x10
-#define MANU_LEN 0x8 /* 7 bytes of info */
-#define MANU_OFFSET 5 /* Info starts at the_ad[MANU_OFFSET] */
+#define MANU_TYPE 0xFF
+#define MANU_LEN 0xa /* 10 bytes of info */
+#define MANU_OFFSET 3 /* Info starts at the_ad[MANU_OFFSET] */
 #define MANU_INFO 0x0031 /* Masquerading as "Gibsons Guitars" */
 #define MANU_INFO_SIZE 2 /* 2 bytes of manufacturer ID */
 /* Bytewise for all positions */
@@ -93,7 +85,7 @@ extern uint8_t manu_info[MANU_INFO_SIZE]; /* Variable for MANU_INFO */
  */ 
 uint8_t _set_bit(
     uint8_t octet,
-    uint8_t index
+    uint8_t index,
     bool bit 
 );
 
