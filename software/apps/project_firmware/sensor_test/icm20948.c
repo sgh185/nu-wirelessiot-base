@@ -92,7 +92,7 @@ icm20948_measurement_t icm20948_read_accelerometer() {
   int16_t z_val = (((uint16_t)i2c_reg_read(MPU_ADDRESS, ICM20948_ACCEL_ZOUT_H)) << 8) | i2c_reg_read(MPU_ADDRESS, ICM20948_ACCEL_ZOUT_L);
 
   // convert to g
-  // coversion at +/- 2 g is 16384 LSB/g
+  // coversion at +/- 2 g is 16384 LSB/g -> probably wrong
   icm20948_measurement_t measurement = {0};
   measurement.x_axis = ((float)x_val) / 16384;
   measurement.y_axis = ((float)y_val) / 16384;
@@ -147,4 +147,13 @@ icm20948_measurement_t icm20948_read_magnetometer() {
   measurement.z_axis = ((float)z_val); //* 0.15;
 
   return measurement;
+}
+
+bool synthesize_data(){
+  icm20948_measurement_t measurement = icm20948_read_magnetometer();
+
+  // normally there would be a threshold here
+  bool flag = rand() & 1;
+
+  return flag;
 }

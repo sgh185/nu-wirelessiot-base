@@ -77,5 +77,6 @@ int main(void){
     nrf_delay_ms(1000);
 
     // return the binary value of if a car is there or not -> do threshold
+    printf("\n%d\n", synthesize_data());
   }
 }
