@@ -1,14 +1,12 @@
 /*
  * Code for sensor/edge nodes of the system
  */ 
-#include "ads.h"
 #include "sensor_device.h"
 
 
 /*
  * NOTE --- See sensor_device.h for global state, declarations, etc.
  */
-
 
 /*
  * ---------- Setup ----------
@@ -29,7 +27,7 @@ simple_ble_app_t* simple_ble_app;
 /*
  * ---------- Helpers ----------
  */ 
-AI void start_ads_and_scans(void)
+void start_ads_and_scans(void)
 {
     /*
      * TOP --- Start advertising "the_ad," start scanning 
@@ -44,7 +42,7 @@ AI void start_ads_and_scans(void)
 }
 
 
-AI void stop_ads_and_scans(void)
+void stop_ads_and_scans(void)
 {
     /*
      * TOP --- Stop advertising "the_ad", stop scans, and
@@ -160,7 +158,7 @@ int main(void)
      */ 
     printf("Board started. Initializing BLE: \n");
 
- 
+
     /*
      * Handle BLE
      */  
@@ -170,8 +168,6 @@ int main(void)
     /*
      * Initialization
      */ 
-    initialize_device_state(sensor);
-
     initialize_ad(sensor);     
     
     APP_SCHED_INIT(
@@ -186,13 +182,14 @@ int main(void)
      * Create and start timer
      */ 
     app_timer_create(&sensor_update_timer, APP_TIMER_MODE_REPEATED, update_callback);	
-    app_timer_start(sensor_update_timer, APP_TIMER_TICKS(UPDATE_INTERVAL), NULL);
+    app_timer_start(sensor_update_timer, APP_TIMER_TICKS(update_interval), NULL);
 
 
     /*
      * Do nothing ... 
      */ 
-    while(1) power_manage();	
+    while(1) power_manage();
+
 }
 
 
