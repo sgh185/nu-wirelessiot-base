@@ -23,6 +23,11 @@ typedef struct {
 // i2c - pointer to already initialized and enabled twim instance
 void icm20948_init(const nrf_twi_mngr_t* i2c);
 
+// Read WIA and check that we are getting proper values
+//
+// return boolean
+bool icm20948_check_magnetometer();
+
 // Read all three axes on the magnetometer
 //
 // Return measurements as floating point values in uT
@@ -109,6 +114,7 @@ typedef enum {
 	AK09916_HYH = 0x14,
 	AK09916_HZL = 0x15,
   AK09916_HZH = 0x16,
+  AK09916_TMPS = 0x17,
   //
   AK09916_ST2 = 0x18,
   AK09916_CNTL2 = 0x31,
