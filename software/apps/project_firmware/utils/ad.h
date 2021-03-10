@@ -148,6 +148,8 @@ bool _get_bit(
 /*
  * Initializers 
  */ 
+#define initialize_ad(type) initialize_ad_for_##type##_device()
+
 void initialize_ad_for_sensor_device(void);
 
 void initialize_ad_for_relayer_device(void);
@@ -170,6 +172,7 @@ void initialize_ad_for_relayer_device(void);
 #define get_recv_sender_seq_no(buf) buf[POS_SEQ_NO]
 
 #define is_ad_from_a_system_device(buf) (!bcmp((buf + POS_MANU_INFO), manu_info, MANU_INFO_SIZE));
+
 #define is_ad_for_this_device(buf) \
 ({ \
     /*
@@ -187,6 +190,20 @@ void initialize_ad_for_relayer_device(void);
     for_this_device ; \
 })
 
-
+#define is_ad_ack_for_this_device(buf) \
+({ \
+    /*
+     * Check if ad:
+     * 1) Is for this device
+     * 2) Is an acknowledgement
+     */ \
+    bool ack_for_this_device = \
+	(true \
+	 && is_ad_for_this_device(buf) \
+	 && get_recv_ack_flag(buf)); \
+    \
+    \
+    ack_for_this_device; \
+})
 
 
