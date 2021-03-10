@@ -128,6 +128,7 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
      */ 
     ble_gap_evt_adv_report_t const *adv_report = &(p_ble_evt->evt.gap_evt.params.adv_report);
     uint8_t *adv_buf = adv_report->data.p_data; 
+    uint16_t adv_len = adv_report->data.len; 
 
 
     /*
@@ -136,7 +137,7 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
      * already scanning, if the ad doesn't fit these
      * conditions, we don't need to do anything else 
      */ 
-    if (!is_ad_ack_for_this_device(adv_buf)) return;
+    if (!is_ad_ack_for_this_device(adv_buf, adv_len)) return;
 
 
     /*
