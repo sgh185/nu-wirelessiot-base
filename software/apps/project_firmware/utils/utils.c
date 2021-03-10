@@ -1,6 +1,7 @@
 /*
  * Implementations of utilities
  */ 
+#include "utils.h"
 
 void scanning_stop(void)
 {
@@ -20,4 +21,9 @@ void scanning_stop(void)
 
 
     return;
+}
+
+bool synthesize_magnetometer_data(void)
+{
+    return ((bool) rand() & 1);
 }
