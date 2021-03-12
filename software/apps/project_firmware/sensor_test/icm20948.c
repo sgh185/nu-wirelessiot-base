@@ -72,11 +72,12 @@ void icm20948_init(const nrf_twi_mngr_t* i2c) {
   i2c_reg_write(MPU_ADDRESS, ICM20948_INT_PIN_CFG, 0x02);
 
   // configure accelerometer range?
-  i2c_reg_write(MPU_ADDRESS, ICM20948_ACCEL_CONFIG, 0x00);
+  // i2c_reg_write(MPU_ADDRESS, ICM20948_ACCEL_CONFIG, 0x00);
 
   // reset magnetometer
   printf("reset magnetometer\n");
   i2c_reg_write(MAG_ADDRESS, AK09916_CNTL3, 0x01);
+  // i2c_reg_write(MAG_ADDRESS, AK09916_CNTL2, 0x00); // power-down
   nrf_delay_ms(100);
 
   // configure magnetometer, enable continuous measurement mode (8 Hz)
@@ -112,6 +113,8 @@ bool icm20948_check_magnetometer(){
   };
   ret_code_t error_code = nrf_twi_mngr_perform(i2c_manager, NULL, read_transfer, 2, NULL);
   APP_ERROR_CHECK(error_code);
+
+  printf("checking for value 9, got value: %d\n", rx_buf[0]);
 
   if(rx_buf[0] == 0b1001){
     return true;
@@ -149,11 +152,18 @@ icm20948_measurement_t icm20948_read_magnetometer() {
   return measurement;
 }
 
-bool synthesize_data(){
-  icm20948_measurement_t measurement = icm20948_read_magnetometer();
+void synthesize_data(){
+  icm20948_measurement_t measurement = icm20948_read_accelerometer();
 
   // normally there would be a threshold here
-  bool flag = rand() & 1;
+  // bool flag = rand() & 1;
 
-  return flag;
+  // printf("%10.3f\n", measurement.y_axis);
+  if (measurement.y_axis > 0.100){
+    printf("true");
+  }
+  else{
+    printf("false");
+  }
+  // return flag;
 }

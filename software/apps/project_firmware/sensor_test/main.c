@@ -66,17 +66,17 @@ int main(void){
     icm20948_measurement_t acc_measurement = icm20948_read_accelerometer();
     icm20948_measurement_t mag_measurement = icm20948_read_magnetometer();
 
-    // print
-    printf("                      X-Axis\t    Y-Axis\t    Z-Axis\n");
-    printf("                  ----------\t----------\t----------\n");
-    printf("Acceleration (g): %10.3f\t%10.3f\t%10.3f\n", acc_measurement.x_axis, acc_measurement.y_axis, acc_measurement.z_axis);
-    printf("Magnetism   (uT): %10.3f\t%10.3f\t%10.3f\n", mag_measurement.x_axis, mag_measurement.y_axis, mag_measurement.z_axis);
-    printf("\n");
+    // print for rtt
+    // printf("                      X-Axis\t    Y-Axis\t    Z-Axis\n");
+    // printf("                  ----------\t----------\t----------\n");
+    // printf("Acceleration (g): %10.3f\t%10.3f\t%10.3f\n", acc_measurement.x_axis, acc_measurement.y_axis, acc_measurement.z_axis);
+    // printf("Magnetism   (uT): %10.3f\t%10.3f\t%10.3f\n", mag_measurement.x_axis, mag_measurement.y_axis, mag_measurement.z_axis);
+    // printf("\n");
 
     // wait
-    nrf_delay_ms(1000);
+    nrf_delay_ms(250);
 
     // return the binary value of if a car is there or not -> do threshold
-    printf("\n%d\n", synthesize_data());
+    synthesize_data();
   }
 }

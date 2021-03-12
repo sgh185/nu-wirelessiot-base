@@ -40,8 +40,8 @@ icm20948_measurement_t icm20948_read_accelerometer();
 
 // synthesize data
 //
-// Returns 0/1 depending on if car is present
-bool synthesize_data();
+// prints 0/1 depending on if car is present
+void synthesize_data();
 
 // Definitions (rewritten for icm20948)
 
