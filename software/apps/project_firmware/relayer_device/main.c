@@ -30,7 +30,7 @@ static bool is_ad_already_handled(
     rb_find_all(
 	sender_parking_ID,
 	parking_IDs_cache,
-	&indices_found,
+	indices_found,
 	&number_of_occurrences
     );
 
@@ -39,7 +39,7 @@ static bool is_ad_already_handled(
      * Search for @sender_seq_no within "corresponding_seq_no_cache"
      */ 
     for (int i = 0 ; i < number_of_occurrences ; i++)
-	if (rb.get(indices_found[i], corresponding_seq_no_cache == sender_seq_no)
+	if (rb_get(indices_found[i], corresponding_seq_no_cache) == sender_seq_no)
 	    return true;
 
 
@@ -92,7 +92,7 @@ static bool should_handle_ad(
     /*
      * Check if @recv_ad is from a system device
      */ 
-    if (!is_ad_from_system_device(recv_ad, recv_ad_len) return false;
+    if (!is_ad_from_a_system_device(recv_ad, recv_ad_len)) return false;
 
 
     /*
@@ -150,8 +150,8 @@ static void handle_ad_for_relaying(uint8_t *recv_ad)
      * <Part 2.> 
      */ 
     set_recv_ack_flag(recv_ad, 1);
-    set_recv_target_device_id(recv_ad, get_recv_sender_device_id(recv_ad));
-    set_recv_target_layer_id(recv_ad, get_recv_layer_device_id(recv_ad));
+    set_recv_target_device_id(recv_ad, (get_recv_sender_device_id(recv_ad)));
+    set_recv_target_layer_id(recv_ad, (get_recv_sender_layer_id(recv_ad)));
 
 
     /*
@@ -164,11 +164,14 @@ static void handle_ad_for_relaying(uint8_t *recv_ad)
 
     /*
      * We're ready to listen for acks in particular
+     * IFF we're not the central node --- i.e. the 
+     * layer ID of this device is 0 (only the central
+     * node can have a layer ID of 0)
      */ 
-    waiting_for_ack = true;
+    waiting_for_ack = (true && (layer_ID != 0));
     
 
-    return true;
+    return;
 }
 
 
@@ -214,50 +217,73 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
      */ 
     ble_gap_evt_adv_report_t const *adv_report = &(p_ble_evt->evt.gap_evt.params.adv_report);
     uint8_t *adv_buf = adv_report->data.p_data; 
-    uint16_t adv_len = adv_report->data.len
+    uint16_t adv_len = adv_report->data.len;
 
 
     /*
      * <Part 2.> (f) 
      */ 
     if (waiting_for_ack)
-	if (is_ad_ack_for_this_device(adv_buf))
+	if (is_ad_ack_for_this_device(adv_buf, adv_len))
 	{ 
-	    if ((ack_ref_count++) == MIN_LEVEL) waiting_for_ack = false;
+	    if ((ack_ref_count++) == MIN_LEVEL) 
+	    {
+		waiting_for_ack = false; 
+		ack_ref_count = 0;
+	    }
+
+
 	    return;
 	}
-
+    
     
     /*
      * <Part 1.> (a)
      */ 
     if (!should_handle_ad(adv_buf, adv_len)) return;
+    printf("relayer_device: found an ad to handle\n");
+    print_buffer(adv_buf, adv_len);
 
 
     /*
      * <Part 1.> (b)
      */ 
     uint8_t sender_parking_ID = get_recv_sender_parking_id(adv_buf),
-	    sender_seq_no = get_recv_sender_seq_no(buf); 
+	    sender_seq_no = get_recv_sender_seq_no(adv_buf); 
 
     if (is_ad_already_handled(sender_parking_ID, sender_seq_no)) return;
+    printf("relayer_device: new ad to handle\n");
 
 
     /*
      * <Part 1.> (c)
      */ 
     place_ad_into_cache(
-	sensor_parking_ID,
+	sender_parking_ID,
 	sender_seq_no
     );
+
+    
+    /*
+     * Debugging
+     */ 
+    print_cache();
 
 
     /*
      * <Part 1.> (d, e)
      */
     advertising_stop();
-    handle_ad_for_relaying();
+    handle_ad_for_relaying(adv_buf);
     advertising_start();
+
+
+    printf(
+	"\n\nfetched info:\nparking_id: %d\ndevice_id: %d\nlayer_id %d\n",
+	get_recv_sender_parking_id(adv_buf),
+	get_recv_sender_device_id(adv_buf),
+	get_recv_sender_layer_id(adv_buf)
+    );
 
     
     return;
@@ -284,12 +310,15 @@ int main(void)
     simple_ble_app = simple_ble_init(&ble_config);
 
 
-    /*
-     * Initialization
-     */ 
-    initialize_device_state(relayer);
+    printf(
+	"\n\nrelayer_device:\nparking_id: %d\ndevice_id: %d\nlayer_id %d\n",
+	get_sender_parking_id(),
+	get_sender_device_id(),
+	get_sender_layer_id()
+    );
 
-    
+
+
     /*
      * Start scanning
      */ 

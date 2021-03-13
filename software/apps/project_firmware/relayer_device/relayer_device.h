@@ -4,12 +4,17 @@
 #pragma once
 
 #include "ad.h"
+#include "ring_buffer.h"
 
 
 
 /*
  * ---------- Global state ----------
  */ 
+
+#define MIN_LEVEL 4
+static bool waiting_for_ack = false;
+static uint8_t ack_ref_count = 0;
 
 /*
  * State for relayed data (upwards)
@@ -19,12 +24,12 @@
  * eviction policy is "kick into oblivion." 
  */ 
 ring_buffer parking_IDs_cache = {
-    .buf = { 0 },
+    .buf = { -1 },
     .next_index_to_fill = 0
 };
 
 ring_buffer corresponding_seq_no_cache = {
-    .buf = { 0 },
+    .buf = { -1 },
     .next_index_to_fill = 0
 };
 
@@ -37,7 +42,7 @@ ring_buffer corresponding_seq_no_cache = {
 static simple_ble_config_t ble_config = {
   .platform_id       = 0x4E,    
   .device_id         = device_ID, /* Set at compile time */
-  .adv_name          = device_name /* Set at compile time */
+  .adv_name          = DEVICE_NAME(DEVICE_TYPE, DEVICE_ID_STR), // device_name, /* Set at compile time */
   .adv_interval      = MSEC_TO_UNITS(500, UNIT_0_625_MS),
   .min_conn_interval = MSEC_TO_UNITS(500, UNIT_1_25_MS),
   .max_conn_interval = MSEC_TO_UNITS(1000, UNIT_1_25_MS),
@@ -66,9 +71,12 @@ static void place_ad_into_cache(
 /*
  * Filtering methods
  */ 
-static bool should_handle_ad(uint8_t *recv_ad);
+static bool should_handle_ad(
+    uint8_t *recv_ad,
+    uint16_t recv_ad_len
+);
 
-static bool direction_to_send_ad(uint8_t *recv_ad);
+static void handle_ad_for_relaying(uint8_t *recv_ad);
 
 
 
