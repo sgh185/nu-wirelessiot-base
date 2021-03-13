@@ -23,7 +23,25 @@ void scanning_stop(void)
     return;
 }
 
+
 bool synthesize_magnetometer_data(void)
 {
     return ((bool) rand() & 1);
+}
+
+
+void print_buffer(
+    uint8_t *adv_buf, 
+    uint16_t adv_len
+)
+{
+    /*
+     * Print out @adv_buf
+     */ 
+    printf("print_buffer:\n");
+    for (uint16_t i = 0 ; i < adv_len ; i++) printf("%x ", adv_buf[i]);
+    printf("\n");
+
+
+    return;
 }

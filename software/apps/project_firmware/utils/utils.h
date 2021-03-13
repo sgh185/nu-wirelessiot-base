@@ -9,3 +9,8 @@
 void scanning_stop(void); 
 
 bool synthesize_magnetometer_data(void);
+
+void print_buffer(
+    uint8_t *adv_buf, 
+    uint16_t adv_len
+);

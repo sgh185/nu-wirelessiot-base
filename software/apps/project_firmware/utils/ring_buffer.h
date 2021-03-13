@@ -159,7 +159,7 @@ typedef struct ring_buffer_t {
     /*
      * Setup
      */ \
-    uint8_t idx, local_num_occ; \
+    uint8_t idx, local_num_occ = 0; \
     \
     \
     /*
