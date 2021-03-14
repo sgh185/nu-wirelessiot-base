@@ -1,0 +1,30 @@
+From 635bc351791e6262a31d2c134024124255619d00 Mon Sep 17 00:00:00 2001
+From: sgh185 <sgh185@sgh185s-MacBook-Pro.local>
+Date: Sat, 13 Mar 2021 18:07:34 -0600
+Subject: [PATCH] nrf52x-base, simple_ble: add functionality in ble event
+ handler to handle callbacks that stop scanning
+
+---
+ lib/simple_ble/simple_ble.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/lib/simple_ble/simple_ble.c b/lib/simple_ble/simple_ble.c
+index 6a744bbd..eda40034 100644
+--- a/lib/simple_ble/simple_ble.c
++++ b/lib/simple_ble/simple_ble.c
+@@ -450,9 +450,10 @@ static void on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context) {
+                 ble_evt_adv_report(p_ble_evt);
+             }
+ 
+-            // continue scanning
++            // continue scanning, ignore state 
+             err_code = sd_ble_gap_scan_start(NULL, &m_scan_buffer);
+-            APP_ERROR_CHECK(err_code);
++	    if (err_code != NRF_ERROR_INVALID_STATE) APP_ERROR_CHECK(err_code);
++	    // APP_ERROR_CHECK(err_code); 
+             break;
+         }
+         case BLE_GAP_EVT_PHY_UPDATE_REQUEST: {
+-- 
+2.21.0
+
