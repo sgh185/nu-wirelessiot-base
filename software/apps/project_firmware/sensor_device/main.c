@@ -81,21 +81,30 @@ void update_callback(void *context)
      * Fetch the magnetometor data, do nothing if 
      * there is no change in the outcome
      */ 
-    bool parking_spot_status = synthesize_magnetometer_data();
+    bool parking_spot_status = !get_occupied_flag(); // synthesize_magnetometer_data();
     if (parking_spot_status == get_occupied_flag()) return;
 
 
     /*
-     * Set the status to the new value 
+     * Debugging
+     */ 
+    printf("sensor_device: parking_spot_status: %d\n", parking_spot_status);
+
+
+    /*
+     * Set the status to the new value, update 
+     * the sequence number of the new ad 
      */ 
     set_occupied_flag(parking_spot_status);
- 
+    incr_device_seq_no(); 
+
 
     /*
      * We're ready to send the new advertisement 
      * and start scanning for acks
      */ 
     start_ads_and_scans();
+    printf("sensor_device: starting ads and scans!\n");
 
 
     return;
@@ -139,12 +148,19 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
 
 
     /*
+     * Debugging
+     */ 
+    printf("sensor_device: received an ack for this device!\n");
+
+
+    /*
      * At this point, we know we have an ack for this
      * device! We have a number of options. Currently,
      * we'll do the simplest operation --- we'll stop
      * advertising and scanning
      */ 
     stop_ads_and_scans();
+    printf("sensor_device: stopping ads and scans\n");
     
     
     return;
@@ -183,6 +199,17 @@ int main(void)
      */ 
     app_timer_create(&sensor_update_timer, APP_TIMER_MODE_REPEATED, update_callback);	
     app_timer_start(sensor_update_timer, APP_TIMER_TICKS(update_interval), NULL);
+
+
+    /*
+     * Debugging
+     */ 
+    printf(
+	"\n\nsensor_device:\nparking_id: %d\ndevice_id: %d\nlayer_id %d\n",
+	get_sender_parking_id(),
+	get_sender_device_id(),
+	get_sender_layer_id()
+    );
 
 
     /*
