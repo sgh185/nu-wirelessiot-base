@@ -1,0 +1,52 @@
+html {
+  overflow: hidden;
+}
+
+.header {
+  width: 60%;
+  margin: 8vh auto;
+  text-align: center;
+}
+
+.header h1 {
+  margin: 16px 0;
+}
+
+.grid {
+  width: 60%;
+  margin: auto;
+}
+
+.spots {
+  height: 30vh;
+  margin-bottom: 20vh;
+  color: white;
+}
+
+.spot {
+  /* height: 30vh;
+  margin-bottom: 20vh; */
+  margin: auto;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.solid-yellow-line {
+  height: 16px;
+  margin: 6px 0;
+  width: 100vw;
+  background: #f7b500;
+}
+
+.padding {
+  width: 100vw;
+  height: 24vh;
+}
+
+.update {
+  color: #FAF7ED;
+}
