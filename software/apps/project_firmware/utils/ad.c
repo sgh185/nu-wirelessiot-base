@@ -14,6 +14,8 @@ uint8_t the_ad[AD_SIZE] = {
 
 };
 
+uint8_t seq_no = 0 ;
+
 uint8_t manu_info[MANU_INFO_SIZE] = { 0x00, 0x31 } ;
 
 
