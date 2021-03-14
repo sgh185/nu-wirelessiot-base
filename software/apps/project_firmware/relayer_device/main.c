@@ -71,6 +71,27 @@ static void place_ad_into_cache(
 }
 
 
+void print_cache(void)
+{
+    /*
+     * TOP --- Print all contents in "parking_IDs_cache"
+     * and "corresponding_seq_no_cache" 
+     */  
+    printf("caches (formatted [pid, seq]):\n");
+    for (uint8_t i = 0 ; i < DEFAULT_RING_BUF_SIZE ; i++)
+	printf(
+	    "[%u, %u] ",
+	    rb_get(i, parking_IDs_cache),
+	    rb_get(i, corresponding_seq_no_cache)
+	);
+    printf("\n");
+
+
+    return;
+}
+
+
+
 /*
  * Filtering methods
  */ 
@@ -169,15 +190,19 @@ static void handle_ad_for_relaying(uint8_t *recv_ad)
      * node can have a layer ID of 0)
      */ 
     waiting_for_ack = (true && (layer_ID != 0));
+
+
+    /*
+     * Debugging
+     */ 
+    printf("relayer_device: ack setup: ");
+    print_buffer(recv_ad, AD_SIZE);
     
 
     return;
 }
 
 
-/*
- * Event handlers
- */ 
 void ble_evt_adv_report (ble_evt_t const* p_ble_evt) 
 {
     /*
@@ -227,11 +252,7 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
 	if (is_ad_ack_for_this_device(adv_buf, adv_len))
 	{ 
 	    if ((ack_ref_count++) == MIN_LEVEL) 
-	    {
-		waiting_for_ack = false; 
-		ack_ref_count = 0;
-	    }
-
+		waiting_for_ack = ack_ref_count = 0; 
 
 	    return;
 	}
@@ -241,8 +262,6 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
      * <Part 1.> (a)
      */ 
     if (!should_handle_ad(adv_buf, adv_len)) return;
-    printf("relayer_device: found an ad to handle\n");
-    print_buffer(adv_buf, adv_len);
 
 
     /*
@@ -253,6 +272,7 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
 
     if (is_ad_already_handled(sender_parking_ID, sender_seq_no)) return;
     printf("relayer_device: new ad to handle\n");
+    print_buffer(adv_buf, adv_len);
 
 
     /*
@@ -275,11 +295,14 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
      */
     advertising_stop();
     handle_ad_for_relaying(adv_buf);
-    advertising_start();
+    simple_ble_adv_raw(adv_buf, AD_SIZE);
 
 
+    /*
+     * Debugging
+     */ 
     printf(
-	"\n\nfetched info:\nparking_id: %d\ndevice_id: %d\nlayer_id %d\n",
+	"fetched info:\nparking_id: %d\ndevice_id: %d\nlayer_id %d\n\n\n",
 	get_recv_sender_parking_id(adv_buf),
 	get_recv_sender_device_id(adv_buf),
 	get_recv_sender_layer_id(adv_buf)
@@ -310,13 +333,15 @@ int main(void)
     simple_ble_app = simple_ble_init(&ble_config);
 
 
+    /*
+     * Debugging
+     */  
     printf(
 	"\n\nrelayer_device:\nparking_id: %d\ndevice_id: %d\nlayer_id %d\n",
 	get_sender_parking_id(),
 	get_sender_device_id(),
 	get_sender_layer_id()
     );
-
 
 
     /*

@@ -23,13 +23,14 @@ static uint8_t ack_ref_count = 0;
  * designed software caches. For example, the 
  * eviction policy is "kick into oblivion." 
  */ 
+#define BUF_VAL_MAX 255
 ring_buffer parking_IDs_cache = {
-    .buf = { -1 },
+    .buf = { BUF_VAL_MAX },
     .next_index_to_fill = 0
 };
 
 ring_buffer corresponding_seq_no_cache = {
-    .buf = { -1 },
+    .buf = { BUF_VAL_MAX },
     .next_index_to_fill = 0
 };
 
@@ -65,6 +66,8 @@ static void place_ad_into_cache(
     uint8_t sender_parking_ID,
     uint8_t sender_seq_no
 ); 
+
+static void print_cache(void);
 
 
 
