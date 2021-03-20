@@ -77,14 +77,14 @@ void print_cache(void)
      * TOP --- Print all contents in "parking_IDs_cache"
      * and "corresponding_seq_no_cache" 
      */  
-    printf("caches (formatted [pid, seq]):\n");
+    DEBUG_PRINT("caches (formatted [pid, seq]):\n");
     for (uint8_t i = 0 ; i < DEFAULT_RING_BUF_SIZE ; i++)
-	printf(
+	DEBUG_PRINT(
 	    "[%u, %u] ",
 	    rb_get(i, parking_IDs_cache),
 	    rb_get(i, corresponding_seq_no_cache)
 	);
-    printf("\n");
+    DEBUG_PRINT("\n");
 
 
     return;
@@ -195,7 +195,7 @@ static void handle_ad_for_relaying(uint8_t *recv_ad)
     /*
      * Debugging
      */ 
-    printf("relayer_device: ack setup: ");
+    DEBUG_PRINT("relayer_device: ack setup: ");
     print_buffer(recv_ad, AD_SIZE);
     
 
@@ -271,7 +271,7 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
 	    sender_seq_no = get_recv_sender_seq_no(adv_buf); 
 
     if (is_ad_already_handled(sender_parking_ID, sender_seq_no)) return;
-    printf("relayer_device: new ad to handle\n");
+    DEBUG_PRINT("relayer_device: new ad to handle\n");
     print_buffer(adv_buf, adv_len);
 
 
@@ -301,8 +301,19 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
     /*
      * Debugging
      */ 
-    printf(
+    DEBUG_PRINT(
 	"fetched info:\nparking_id: %d\ndevice_id: %d\nlayer_id %d\n\n\n",
+	get_recv_sender_parking_id(adv_buf),
+	get_recv_sender_device_id(adv_buf),
+	get_recv_sender_layer_id(adv_buf)
+    );
+
+
+    /*
+     * Prints for web server
+     */ 
+    printf(
+	"RECV: %d %d %d\n",
 	get_recv_sender_parking_id(adv_buf),
 	get_recv_sender_device_id(adv_buf),
 	get_recv_sender_layer_id(adv_buf)
@@ -353,7 +364,7 @@ int main(void)
     /*
      * Do nothing ... 
      */ 
-    while(1) power_manage();	
+    while(1) power_manage(); 	
 }
 
 
