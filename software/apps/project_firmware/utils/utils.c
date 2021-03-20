@@ -24,10 +24,19 @@ void scanning_stop(void)
 }
 
 
-bool synthesize_magnetometer_data(void)
+#if SIMULATE
+bool synthesize_data(void)
 {
     return ((bool) rand() & 1);
 }
+
+#else
+bool synthesize_data(void)
+{
+    return ((bool) rand() & 1);
+}
+
+#endif
 
 
 void print_buffer(
@@ -38,9 +47,9 @@ void print_buffer(
     /*
      * Print out @adv_buf
      */ 
-    printf("print_buffer:\n");
-    for (uint16_t i = 0 ; i < adv_len ; i++) printf("%x ", adv_buf[i]);
-    printf("\n");
+    DEBUG_PRINT("print_buffer:\n");
+    for (uint16_t i = 0 ; i < adv_len ; i++) DEBUG_PRINT("%x ", adv_buf[i]);
+    DEBUG_PRINT("\n");
 
 
     return;
