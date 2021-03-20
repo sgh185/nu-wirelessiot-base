@@ -78,17 +78,22 @@ void update_callback(void *context)
 
 
     /*
-     * Fetch the magnetometor data, do nothing if 
-     * there is no change in the outcome
+     * Fetch the magnetometor and/or accelerometer, do nothing if 
+     * there is no change in the outcome (unless simulating)
      */ 
-    bool parking_spot_status = !get_occupied_flag(); // synthesize_magnetometer_data();
+#if SIMULATE
+    bool parking_spot_status = !get_occupied_flag(); /* Alternate values */ 
     if (parking_spot_status == get_occupied_flag()) return;
+#else
+    bool parking_spot_status = synthesize_magnetometer_data();
+    if (parking_spot_status == get_occupied_flag()) return;
+#endif
 
 
     /*
      * Debugging
      */ 
-    printf("sensor_device: parking_spot_status: %d\n", parking_spot_status);
+    DEBUG_PRINT("sensor_device: parking_spot_status: %d\n", parking_spot_status);
 
 
     /*
@@ -104,7 +109,7 @@ void update_callback(void *context)
      * and start scanning for acks
      */ 
     start_ads_and_scans();
-    printf("sensor_device: starting ads and scans!\n");
+    DEBUG_PRINT("sensor_device: starting ads and scans!\n");
 
 
     return;
@@ -150,7 +155,7 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
     /*
      * Debugging
      */ 
-    printf("sensor_device: received an ack for this device!\n");
+    DEBUG_PRINT("sensor_device: received an ack for this device!\n");
 
 
     /*
@@ -160,7 +165,7 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
      * advertising and scanning
      */ 
     stop_ads_and_scans();
-    printf("sensor_device: stopping ads and scans\n");
+    DEBUG_PRINT("sensor_device: stopping ads and scans\n");
     
     
     return;
