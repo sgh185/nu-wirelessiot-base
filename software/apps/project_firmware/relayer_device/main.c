@@ -159,7 +159,8 @@ static void handle_ad_for_relaying(uint8_t *recv_ad)
      * is done almost entirely at initialization --- we just
      * simply need to change the target dev/layer ID to the 
      * sender's info so it's ready to be received properly by 
-     * the sender 
+     * the sender. We must also set the throttle bit to this
+     * device's current value (propagation down). 
      *
      * NOTE --- Part 2 has now been encoded directlyu into 
      * @recv_ad because the data that both parts modify are
@@ -171,6 +172,7 @@ static void handle_ad_for_relaying(uint8_t *recv_ad)
      * <Part 2.> 
      */ 
     set_recv_ack_flag(recv_ad, 1);
+    set_recv_throttle_flag(recv_ad, throttle_down);
     set_recv_target_device_id(recv_ad, (get_recv_sender_device_id(recv_ad)));
     set_recv_target_layer_id(recv_ad, (get_recv_sender_layer_id(recv_ad)));
 
@@ -203,6 +205,7 @@ static void handle_ad_for_relaying(uint8_t *recv_ad)
 }
 
 
+#define REPEAT_PRINTS 3
 void ble_evt_adv_report (ble_evt_t const* p_ble_evt) 
 {
     /*
@@ -220,7 +223,8 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
      * 
      * a) receive/filter -> b) no cache hit -> c) add to cache -> 
      * d) send a set number of acks -> e) relay info to respective 
-     * layer -> f) wait for ack -> g) listen for everything else
+     * layer -> f) wait for ack -> g) record throttle level -> h) 
+     * listen for everything else
      *
      * NOTE --- parts d and e have been combined. Both the ack
      * and the advertisement to send are combined into one.
@@ -230,8 +234,8 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
      * the relayer will filter out all other ads. 
      *
      * Part 1 is a-e
-     * Part 2 is f
-     * Standard scanning is g, started in main
+     * Part 2 is f-g
+     * Standard scanning is h, started in main
      *
      * Part 1 cannot happen if Part 2 is in progress
      * for some respective advertisement
@@ -251,6 +255,8 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
     if (waiting_for_ack)
 	if (is_ad_ack_for_this_device(adv_buf, adv_len))
 	{ 
+	    throttle_down = get_recv_throttle_flag(adv_buf);
+
 	    if ((ack_ref_count++) == MIN_LEVEL) 
 		waiting_for_ack = ack_ref_count = 0; 
 
@@ -312,16 +318,79 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
     /*
      * Prints for web server
      */ 
-    printf(
-	"RECV: %d %d %d\n",
-	get_recv_sender_parking_id(adv_buf),
-	get_recv_sender_device_id(adv_buf),
-	get_recv_sender_layer_id(adv_buf)
-    );
+    for (uint8_t i = 0 ; i < REPEAT_PRINTS ; i++)
+	printf(
+	    "RECV %d %d\n",
+	    get_recv_sender_parking_id(adv_buf),
+	    get_recv_occupied_flag(adv_buf)
+	);
 
     
     return;
 }
+
+
+/* For CENTRAL device only */
+#if !DEVICE_ID
+/*
+ * Throttling methods, handlers
+ */ 
+void button_handler(
+    nrfx_gpiote_pin_t pin, 
+    nrf_gpiote_polarity_t action
+) 
+{
+    /*
+     * Button interrupts simulate the transition
+     * to throttle down device polling intervals
+     */
+    switch(pin) 
+    {
+	case BUTTON1: 
+	{
+	    throttle_down = 0;  
+	    break;
+	}
+    	case BUTTON2: 
+	{
+	    throttle_down = 1;
+	    break;
+	}
+	default: break;
+    }
+
+
+    /*
+     * Debugging
+     */  
+    DEBUG_PRINT(
+	"central_device: throttle_down is %d\n",
+	throttle_down
+    );
+
+
+    return;
+}
+
+
+static void gpio_in_with_interrupt(
+    nrfx_gpiote_pin_t pin, 
+    nrf_gpio_pin_pull_t pull, 
+    nrfx_gpiote_evt_handler_t handler
+) 
+{
+    // Configure I/O pin
+    // HITOLO: Sense high-to-low transition
+    // Alternatives: LOTOHI or TOGGLE (for either)
+    nrfx_gpiote_in_config_t in_config = NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
+    in_config.pull = pull;
+    ret_code_t err_code = nrfx_gpiote_in_init(pin, &in_config, handler);
+    APP_ERROR_CHECK(err_code);
+
+    // Enable the interrupts
+    nrfx_gpiote_in_event_enable(pin, true);
+}
+#endif
 
 
 /*
@@ -356,15 +425,26 @@ int main(void)
 
 
     /*
+     * Initialization (if necessary)
+     */ 
+#if !DEVICE_ID
+    ret_code_t err_code = nrfx_gpiote_init();
+    APP_ERROR_CHECK(err_code);
+    gpio_in_with_interrupt(BUTTON1, NRF_GPIO_PIN_PULLUP, button_handler);
+    gpio_in_with_interrupt(BUTTON2, NRF_GPIO_PIN_PULLUP, button_handler);
+#endif
+ 
+
+    /*
      * Start scanning
      */ 
     scanning_start();
     
-    
+   
     /*
      * Do nothing ... 
      */ 
-    while(1) power_manage(); 	
+    while(1) power_manage();	
 }
 
 

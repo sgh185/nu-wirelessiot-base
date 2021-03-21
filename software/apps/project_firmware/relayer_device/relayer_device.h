@@ -15,6 +15,8 @@
 #define MIN_LEVEL 4
 static bool waiting_for_ack = false;
 static uint8_t ack_ref_count = 0;
+static bool throttle_down = false;
+
 
 /*
  * State for relayed data (upwards)
@@ -80,7 +82,5 @@ static bool should_handle_ad(
 );
 
 static void handle_ad_for_relaying(uint8_t *recv_ad);
-
-
 
 
