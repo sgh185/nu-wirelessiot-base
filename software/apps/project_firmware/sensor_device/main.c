@@ -25,6 +25,14 @@ simple_ble_app_t* simple_ble_app;
 
 
 /*
+ * Sensor setup
+ */ 
+#if !SIMULATE
+NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
+#endif
+
+
+/*
  * ---------- Helpers ----------
  */ 
 void start_ads_and_scans(void)
@@ -81,13 +89,12 @@ void update_callback(void *context)
      * Fetch the magnetometor and/or accelerometer, do nothing if 
      * there is no change in the outcome (unless simulating)
      */ 
-#if SIMULATE
-    bool parking_spot_status = !get_occupied_flag(); /* Alternate values */ 
+    bool parking_spot_status = 
+	(SIMULATE) ? 
+	(!get_occupied_flag()) : /* Alternating values */
+	(synthesize_data()) ;	
+
     if (parking_spot_status == get_occupied_flag()) return;
-#else
-    bool parking_spot_status = synthesize_magnetometer_data();
-    if (parking_spot_status == get_occupied_flag()) return;
-#endif
 
 
     /*
@@ -116,7 +123,7 @@ void update_callback(void *context)
 }
 
 
-void ble_evt_adv_report (ble_evt_t const* p_ble_evt) 
+void ble_evt_adv_report (ble_evt_t const *p_ble_evt) 
 {
     /*
      * TOP --- Event handler for receiving an advertisement
@@ -189,6 +196,8 @@ int main(void)
     /*
      * Initialization
      */ 
+    initialize_sensor(&twi_mngr_instance);
+
     initialize_ad(sensor);     
     
     APP_SCHED_INIT(

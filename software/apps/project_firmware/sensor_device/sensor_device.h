@@ -3,6 +3,7 @@
  */ 
 
 #include "ad.h"
+#include "icm20948.h"
 
 
 /*
@@ -44,7 +45,6 @@ static simple_ble_config_t ble_config = {
 #else
 #define START_UPDATE_INTERVAL 300000 /* 5 minutes */ 
 #endif
-
 // #define SCHED_QUEUE_SIZE 32
 #define SCHED_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE
 static uint32_t update_interval = START_UPDATE_INTERVAL;
