@@ -50,6 +50,7 @@ extern uint8_t the_ad[AD_SIZE];
 #define POS_IS_RELAY 2
 #define POS_DIRECTION 3
 #define POS_IS_ACK 4
+#define POS_THROTTLE 5
 
 
 /*
@@ -104,12 +105,14 @@ bool _get_bit(
 #define get_relay_flag() _get_bit(the_ad[FLAGS_OFFSET], POS_IS_RELAY) 
 #define get_direction_flag() _get_bit(the_ad[FLAGS_OFFSET], POS_DIRECTION) 
 #define get_ack_flag() _get_bit(the_ad[FLAGS_OFFSET], POS_IS_ACK) 
+#define get_throttle_flag() _get_bit(the_ad[FLAGS_OFFSET], POS_THROTTLE) 
 
 #define set_occupied_flag(bit) the_ad[FLAGS_OFFSET] = _set_bit(the_ad[FLAGS_OFFSET], POS_IS_OCCUPIED, bit) 
 #define set_redundancy_flag(bit) the_ad[FLAGS_OFFSET] = _set_bit(the_ad[FLAGS_OFFSET], POS_REDUNDANCY, bit) 
 #define set_relay_flag(bit) the_ad[FLAGS_OFFSET] = _set_bit(the_ad[FLAGS_OFFSET], POS_IS_RELAY, bit) 
 #define set_direction_flag(bit) the_ad[FLAGS_OFFSET] = _set_bit(the_ad[FLAGS_OFFSET], POS_DIRECTION, bit) 
 #define set_ack_flag(bit) the_ad[FLAGS_OFFSET] = _set_bit(the_ad[FLAGS_OFFSET], POS_IS_ACK, bit) 
+#define set_throttle_flag(bit) the_ad[FLAGS_OFFSET] = _set_bit(the_ad[FLAGS_OFFSET], POS_THROTTLE, bit) 
 
 
 /*
@@ -156,12 +159,14 @@ void initialize_ad_for_relayer_device(void);
 #define get_recv_relay_flag(buf) _get_bit(buf[FLAGS_OFFSET], POS_IS_RELAY) 
 #define get_recv_direction_flag(buf) _get_bit(buf[FLAGS_OFFSET], POS_DIRECTION) 
 #define get_recv_ack_flag(buf) _get_bit(buf[FLAGS_OFFSET], POS_IS_ACK) 
+#define get_recv_throttle_flag(buf) _get_bit(buf[FLAGS_OFFSET], POS_THROTTLE) 
 
 #define set_recv_occupied_flag(buf, bit) buf[FLAGS_OFFSET] = _set_bit(buf[FLAGS_OFFSET], POS_IS_OCCUPIED, bit) 
 #define set_recv_redundancy_flag(buf, bit) buf[FLAGS_OFFSET] = _set_bit(buf[FLAGS_OFFSET], POS_REDUNDANCY, bit) 
 #define set_recv_relay_flag(buf, bit) buf[FLAGS_OFFSET] = _set_bit(buf[FLAGS_OFFSET], POS_IS_RELAY, bit) 
 #define set_recv_direction_flag(buf, bit) buf[FLAGS_OFFSET] = _set_bit(buf[FLAGS_OFFSET], POS_DIRECTION, bit) 
 #define set_recv_ack_flag(buf, bit) buf[FLAGS_OFFSET] = _set_bit(buf[FLAGS_OFFSET], POS_IS_ACK, bit) 
+#define set_recv_throttle_flag(buf, bit) _set_bit(buf[FLAGS_OFFSET], POS_THROTTLE, bit) 
 
 #define get_recv_sender_device_id(buf) buf[POS_SDEV_ID]
 #define get_recv_sender_layer_id(buf) buf[POS_SLAYER_ID]
