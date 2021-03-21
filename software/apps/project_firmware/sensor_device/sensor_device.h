@@ -19,7 +19,14 @@ static bool is_advertising_and_scanning = false;
 /*
  * State for energy savings 
  */ 
-static bool is_night_time = false;
+#if SIMULATE
+/* 15, 30 seconds */
+static uint32_t intervals = { 15000 /* normal speed */, 30000 /* throttle down */ } ;
+#else
+/* 5, 30 mins */
+static uint32_t intervals = { 300000 /* normal speed */, 1800000 /* throttle down */ } ;
+#endif
+
 
 
 /*
@@ -40,12 +47,7 @@ static simple_ble_config_t ble_config = {
 /*
  * ---------- Timer Info ----------
  */ 
-#if SIMULATE 
-#define START_UPDATE_INTERVAL 15000 /* 15 seconds */ 
-#else
-#define START_UPDATE_INTERVAL 300000 /* 5 minutes */ 
-#endif
 // #define SCHED_QUEUE_SIZE 32
 #define SCHED_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE
-static uint32_t update_interval = START_UPDATE_INTERVAL;
+static uint32_t update_interval = intervals[0] ;
 

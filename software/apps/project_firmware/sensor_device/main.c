@@ -65,6 +65,39 @@ void stop_ads_and_scans(void)
 }
 
 
+void handle_throttle(uint8_t *adv_buf)
+{
+    /*
+     * Fetch the throttle flag of @adv_buf
+     */  
+    bool throttle = get_recv_throttle_flag(adv_buf);
+
+
+    /*
+     * Make a change if "throttle_down" IFF there's
+     * a change from the current value
+     */ 
+    if (throttle == (get_throttle_flag())) return;
+
+
+    /*
+     * Stop the timer, reset the value in "the_ad,"
+     * and start the timer with the new interval 
+     */ 
+    set_throttle_flag(throttle);
+    update_interval = intervals[((uint8_t) throttle)];
+    app_stop_timer(sensor_update_timer);
+    app_timer_start(
+	sensor_update_timer, 
+	APP_TIMER_TICKS(update_interval), 
+	NULL
+    );
+
+
+    return;
+}
+
+
 /*
  * ---------- Callbacks/Handlers ----------
  */ 
@@ -164,6 +197,14 @@ void ble_evt_adv_report (ble_evt_t const *p_ble_evt)
      */ 
     DEBUG_PRINT("sensor_device: received an ack for this device!\n");
 
+
+    /*
+     * Handle throttle --- i.e. check the throttle flag
+     * of the ack and change the update timer interval 
+     * if necessary
+     */ 
+    handle_throttle(adv_buf);
+    
 
     /*
      * At this point, we know we have an ack for this
