@@ -29,13 +29,6 @@ bool synthesize_data(void)
 {
     return ((bool) rand() & 1);
 }
-
-#else
-bool synthesize_data(void)
-{
-    return ((bool) rand() & 1);
-}
-
 #endif
 
 

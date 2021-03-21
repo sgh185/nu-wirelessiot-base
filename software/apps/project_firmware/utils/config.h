@@ -21,6 +21,6 @@
 #include "nrf52840dk.h"
 
 #define SIMULATE 1
-#define DEBUG 0
+#define DEBUG 1
 #define AI __attribute__((always_inline)) inline
 #define DEBUG_PRINT if (DEBUG) printf
