@@ -193,7 +193,7 @@ static void handle_ad_for_relaying(uint8_t *recv_ad)
      */ 
     waiting_for_ack = (true && (layer_ID != 0));
 
-
+    
     /*
      * Debugging
      */ 
@@ -303,7 +303,7 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
     handle_ad_for_relaying(adv_buf);
     simple_ble_adv_raw(adv_buf, AD_SIZE);
 
-
+    
     /*
      * Debugging
      */ 
@@ -320,7 +320,7 @@ void ble_evt_adv_report (ble_evt_t const* p_ble_evt)
      */ 
     for (uint8_t i = 0 ; i < REPEAT_PRINTS ; i++)
 	printf(
-	    "RECV %d %d\n",
+	    "RECV %d %d ",
 	    get_recv_sender_parking_id(adv_buf),
 	    get_recv_occupied_flag(adv_buf)
 	);
