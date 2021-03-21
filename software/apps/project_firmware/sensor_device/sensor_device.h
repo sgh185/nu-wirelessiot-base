@@ -21,10 +21,10 @@ static bool is_advertising_and_scanning = false;
  */ 
 #if SIMULATE
 /* 15, 30 seconds */
-static uint32_t intervals = { 15000 /* normal speed */, 30000 /* throttle down */ } ;
+static const uint32_t intervals[2] = { 15000 /* normal speed */, 30000 /* throttle down */ } ;
 #else
 /* 5, 30 mins */
-static uint32_t intervals = { 300000 /* normal speed */, 1800000 /* throttle down */ } ;
+static const uint32_t intervals[2] = { 300000 /* normal speed */, 1800000 /* throttle down */ } ;
 #endif
 
 

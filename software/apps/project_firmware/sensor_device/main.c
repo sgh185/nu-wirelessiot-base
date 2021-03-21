@@ -86,7 +86,7 @@ void handle_throttle(uint8_t *adv_buf)
      */ 
     set_throttle_flag(throttle);
     update_interval = intervals[((uint8_t) throttle)];
-    app_stop_timer(sensor_update_timer);
+    app_timer_stop(sensor_update_timer);
     app_timer_start(
 	sensor_update_timer, 
 	APP_TIMER_TICKS(update_interval), 
@@ -98,7 +98,7 @@ void handle_throttle(uint8_t *adv_buf)
      * Debugging
      */ 
     DEBUG_PRINT(
-	"sensor_device: interval now %d\n", 
+	"sensor_device: interval now %ld\n", 
 	update_interval
     );
 
@@ -246,7 +246,9 @@ int main(void)
     /*
      * Initialization
      */ 
+#if !SIMULATE
     initialize_sensor(&twi_mngr_instance);
+#endif
 
     initialize_ad(sensor);     
     
