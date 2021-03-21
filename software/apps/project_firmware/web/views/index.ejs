@@ -3,7 +3,7 @@
 
   <head>
     <meta charset="utf-8">
-    <!-- <meta http-equiv="Refresh" content="30"> -->
+    <meta http-equiv="Refresh" content="60">
     <title>ParkingBLE</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
@@ -13,82 +13,46 @@
 
     <div class="header">
       <h1>ParkingBLE</h1>
-      <p>A demonstration of system's UI, "simulated" for <em>Ridge Avenue</em>. See <a href="https://github.com/sgh185/nu-wirelessiot-base/tree/project">code</a>.</p>
+      <p>A demonstration of system's UI, "simulated" for street parking. See <a href="https://github.com/sgh185/nu-wirelessiot-base/tree/project">code</a>.</p>
     </div>
     <div class="header">
       <hr>
     </div>
       <div id="parking" class="carousel slide bg-secondary">
         <div class="carousel-inner">
-          <div class="carousel-item active">
-            <div class="row spots">
-              <div class="col-lg-3 spot border">
-                <h4>Spot 1 : <span class="badge badge-success">Available</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
+
+          <% for (let i = 0; i < Object.keys(ps).length; i += 4) { %>
+
+            <% if (i == 0) { %>
+              <div class="carousel-item active">
+            <% } else { %>
+              <div class="carousel-item">
+            <% } %>
+
+                <div class="row spots">
+
+                <% for (let j = i; j < i + 4 ; j++) { %>
+                  <div class="col-lg-3 spot border">
+                    <h4>Spot <%=j + 1%> :
+                      <% if (ps[j]) { %>
+                        <span class="badge badge-danger">Occupied</span>
+                      <% } else { %>
+                        <span class="badge badge-success">Available</span>
+                      <% } %>
+                    </h4>
+                    <p class="update"><em>Last updated: <strong><%=ut[j]%> mins ago</strong></em></p>
+                  </div>
+                <% } %>
+
+                </div>
+                <div class="solid-yellow-line"></div>
+                <div class="solid-yellow-line"></div>
+                <div class="padding"></div>
               </div>
-              <div class="col-lg-3 spot border">
-                <h4>Spot 2 : <span class="badge badge-danger">Occupied</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-              <div class="col-lg-3 spot border">
-                <h4>Spot 3 : <span class="badge badge-success">Available</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-              <div class="col-lg-3 spot border">
-                <h4>Spot 4 : <span class="badge badge-success">Available</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-            </div>
-            <div class="solid-yellow-line"></div>
-            <div class="solid-yellow-line"></div>
-            <div class="padding"></div>
-          </div>
-          <div class="carousel-item">
-            <div class="row spots">
-              <div class="col-lg-3 spot border">
-                <h4>Spot 1 : <span class="badge badge-success">Available</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-              <div class="col-lg-3 spot border">
-                <h4>Spot 2 : <span class="badge badge-danger">Occupied</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-              <div class="col-lg-3 spot border">
-                <h4>Spot 3 : <span class="badge badge-success">Available</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-              <div class="col-lg-3 spot border">
-                <h4>Spot 4 : <span class="badge badge-success">Available</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-            </div>
-            <div class="solid-yellow-line"></div>
-            <div class="solid-yellow-line"></div>
-            <div class="padding"></div>
-          </div>
-          <div class="carousel-item">
-            <div class="row spots">
-              <div class="col-lg-3 spot border">
-                <h4>Spot 1 : <span class="badge badge-success">Available</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-              <div class="col-lg-3 spot border">
-                <h4>Spot 2 : <span class="badge badge-danger">Occupied</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-              <div class="col-lg-3 spot border">
-                <h4>Spot 3 : <span class="badge badge-success">Available</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-              <div class="col-lg-3 spot border">
-                <h4>Spot 4 : <span class="badge badge-success">Available</span></h4>
-                <p class="update"><em>Last updated: <strong>5 mins ago</strong></em></p>
-              </div>
-            </div>
-            <div class="solid-yellow-line"></div>
-            <div class="solid-yellow-line"></div>
-            <div class="padding"></div>
-          </div>
+
+          <% } %>
+
+
         </div>
         <a class="carousel-control-prev" href="#parking" role="button" data-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
