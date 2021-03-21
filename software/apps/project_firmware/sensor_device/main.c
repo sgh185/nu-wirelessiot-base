@@ -94,6 +94,15 @@ void handle_throttle(uint8_t *adv_buf)
     );
 
 
+    /*
+     * Debugging
+     */ 
+    DEBUG_PRINT(
+	"sensor_device: interval now %d\n", 
+	update_interval
+    );
+
+
     return;
 }
 
