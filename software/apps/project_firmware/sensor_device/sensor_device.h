@@ -4,6 +4,7 @@
 
 #include "ad.h"
 #include "icm20948.h"
+#include "profile.h"
 
 
 /*

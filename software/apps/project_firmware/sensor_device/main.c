@@ -41,6 +41,7 @@ void start_ads_and_scans(void)
      * TOP --- Start advertising "the_ad," start scanning 
      * for acknowledgements, and set status flags
      */ 
+    adv_start = DWT->CYCCNT;
     is_advertising_and_scanning = true;
     simple_ble_adv_raw(the_ad, AD_SIZE);
     scanning_start();
@@ -59,7 +60,7 @@ void stop_ads_and_scans(void)
     is_advertising_and_scanning = false;
     advertising_stop();
     scanning_stop();
-
+    adv_elapsed += DWT->CYCCNT - adv_start;
 
     return;
 }
@@ -119,6 +120,11 @@ void update_callback(void *context)
      * data if necessary, package the corresponding data
      * into an advertisement, and start sending
      */ 
+    stop_profiling();
+    print_profile();
+    start_profiling();
+    ih_start = DWT->CYCCNT;   
+
 
     /*
      * If we're still advertising and scanning from the previous
@@ -136,13 +142,13 @@ void update_callback(void *context)
 	(!get_occupied_flag()) : /* Alternating values */
 	(synthesize_data()) ;	
 
-    if (parking_spot_status == get_occupied_flag()) return;
+    if (parking_spot_status == get_occupied_flag()) { ih_elapsed +=  DWT->CYCCNT - ih_start ; pause_profiling(); return; }
 
 
     /*
      * Debugging
      */ 
-    DEBUG_PRINT("sensor_device: parking_spot_status: %d\n", parking_spot_status);
+    DEBUG_PRINT("\n----------\nsensor_device: parking_spot_status: %d\n", parking_spot_status);
 
 
     /*
@@ -159,6 +165,8 @@ void update_callback(void *context)
      */ 
     start_ads_and_scans();
     DEBUG_PRINT("sensor_device: starting ads and scans!\n");
+    ih_elapsed +=  DWT->CYCCNT - ih_start;
+    pause_profiling();
 
 
     return;
@@ -167,6 +175,8 @@ void update_callback(void *context)
 
 void ble_evt_adv_report (ble_evt_t const *p_ble_evt) 
 {
+    resume_profiling();
+    evt_start = DWT->CYCCNT;
     /*
      * TOP --- Event handler for receiving an advertisement
      * during the ads/scans phase --- filter ads and process
@@ -180,8 +190,8 @@ void ble_evt_adv_report (ble_evt_t const *p_ble_evt)
      * Killswitch, may be unnecessary, but in place to handle
      * corner cases where there's overlap between interrupt 
      * handlers and event handlers (unclear)
-     */
-    if (!is_advertising_and_scanning) return;
+     */ 
+    if (!is_advertising_and_scanning) { evt_elapsed +=  DWT->CYCCNT - evt_start; pause_profiling(); return; }
 
 
     /*
@@ -198,13 +208,14 @@ void ble_evt_adv_report (ble_evt_t const *p_ble_evt)
      * already scanning, if the ad doesn't fit these
      * conditions, we don't need to do anything else 
      */ 
-    if (!is_ad_ack_for_this_device(adv_buf, adv_len)) return;
+    if (!is_ad_ack_for_this_device(adv_buf, adv_len)) { evt_elapsed +=  DWT->CYCCNT - evt_start; pause_profiling(); return; }
 
 
     /*
      * Debugging
      */ 
     DEBUG_PRINT("sensor_device: received an ack for this device!\n");
+    print_buffer(adv_buf, adv_len);
 
 
     /*
@@ -223,7 +234,8 @@ void ble_evt_adv_report (ble_evt_t const *p_ble_evt)
      */ 
     stop_ads_and_scans();
     DEBUG_PRINT("sensor_device: stopping ads and scans\n");
-    
+    evt_elapsed +=  DWT->CYCCNT - evt_start;
+    pause_profiling(); 
     
     return;
 }
@@ -277,6 +289,11 @@ int main(void)
 	get_sender_layer_id()
     );
 
+    start_profiling();
+    nrf_delay_ms(15000);
+    stop_profiling();
+    print_profile();
+    start_profiling();
 
     /*
      * Do nothing ... 
